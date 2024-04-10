@@ -1,7 +1,7 @@
 import React from 'react';
 import LoginForm from './LoginForm';
-import login from './assets/login.png';
-import lock from './assets/lock.png';
+//import login from './assets/login.png';
+//import lock from './assets/lock.png';
 
 function Login() {
     const handleLogin = (username, password) => {
