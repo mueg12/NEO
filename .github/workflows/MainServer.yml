@@ -33,7 +33,7 @@ jobs:
       - name: download h2
         run: |
           wget https://github.com/h2database/h2database/releases/download/version-2.2.224/h2-2023-09-17.zip
-          unzip h2-2023.09.17.zip
+          unzip h2-2023-09-17.zip
           cd h2/bin
           chmod +x h2.sh
           ./h2.sh
