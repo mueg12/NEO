@@ -32,8 +32,11 @@ jobs:
 
       - name: Build Spring Boot App
         run: |
-          sudo apt update
-          sudo apt install h2
+          wget https://h2database.com/h2-202x.x.x.zip
+          unzip h2-202x.x.x.zip
+          cd h2/bin
+          chmod +x h2.sh
+          ./h2.sh
           cd web/back
           chmod +x ./gradlew
           ./gradlew build
