@@ -33,6 +33,7 @@ jobs:
       - name: Build Spring Boot App
         run: |
           cd web/back
+          chmod +x ./gradlew
           ./gradlew build
 
       - name: Deploy to Server
