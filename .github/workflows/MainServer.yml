@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Spring Boot App
         run: |
-          cd web/back/spring-boot-app
+          cd web/back
           ./gradlew build
 
       - name: Deploy to Server
