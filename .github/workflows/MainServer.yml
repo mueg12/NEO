@@ -32,6 +32,8 @@ jobs:
 
       - name: Build Spring Boot App
         run: |
+          sudo apt update
+          sudo apt install h2
           cd web/back
           chmod +x ./gradlew
           ./gradlew build
