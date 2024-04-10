@@ -30,13 +30,16 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Build Spring Boot App
+      - name: download h2
         run: |
-          wget https://h2database.com/h2-202x.x.x.zip
-          unzip h2-202x.x.x.zip
+          wget https://h2database.com/h2-2023.09.17.zip
+          unzip h2-2023.09.17.zip
           cd h2/bin
           chmod +x h2.sh
           ./h2.sh
+
+      - name: Build Spring Boot App
+        run: |
           cd web/back
           chmod +x ./gradlew
           ./gradlew build
