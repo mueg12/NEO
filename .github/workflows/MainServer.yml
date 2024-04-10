@@ -21,6 +21,7 @@ jobs:
 
       - name: Copy build to Spring Boot static folder
         run: |
+          mkdir -p web/back/src/main/resources/static/
           cp -r web/front/build/* web/back/src/main/resources/static/
 
       - name: Set up Java
