@@ -23,7 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
         //DB에서 조회
-        User userData = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        User userData = userRepository.findByUsername(username);
+
         if(userData != null){
             //UserDetails에 담아서 return하면 AuthenticationManager가 검증
             System.out.println("gogo");

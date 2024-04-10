@@ -4,6 +4,8 @@ package com.neo.back.springjwt.config;
 import com.neo.back.springjwt.jwt.JWTFilter;
 import com.neo.back.springjwt.jwt.JWTUtil;
 import com.neo.back.springjwt.jwt.LoginFilter;
+import com.neo.back.springjwt.oauth2.CustomSuccessHandler;
+import com.neo.back.springjwt.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,9 +29,13 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
         this.authenticationConfiguration=authenticationConfiguration;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
     }
 
@@ -64,7 +71,7 @@ public class SecurityConfig {
                                 //헤더 허용
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setMaxAge(3600L);
-                                //Authorization 헤더에 jwt 토큰 보낼거기떄문.
+                                //Authorization 헤더에 jwt 토큰 보낼거기 때문.
                                 configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
                                 return configuration;
@@ -76,13 +83,28 @@ public class SecurityConfig {
         http
                 .csrf((auth)->auth.disable());
 
-        //from 로그인 방식 disable
+        //form 로그인 방식 disable
         http
                 .formLogin((auth)->auth.disable());
 
         //http basic 인증 방식 disable
         http.
                 httpBasic((auth) -> auth.disable());
+
+        //JWTFilter 등록
+        http
+                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+
+        //oauth2
+        http
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuth2UserService))
+                                .successHandler(customSuccessHandler)
+                );
+
+
+
         //경로별 인가 작업
         http.
                 authorizeHttpRequests((auth)-> auth
@@ -90,19 +112,27 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
-        //JWTFilter 등록
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
-        //addfilterAt 원하는 자리에 등록, usernameauthentication대체하는거이기에 at
+        //addfilterAt 원하는 자리에 등록, usernameauthentication 대체하는거이기에 at
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-        //세션 설정
+        //세션 설정 stateless로 설정
         http
                 .sessionManagement((session)->session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        //세션 설정 중복 로그인 방지.
+        http
+                .sessionManagement((auth)-> auth
+                        .maximumSessions(1) //하나의 아이디에 대한 다중 로그인 허용 개수
+                        .maxSessionsPreventsLogin(false)); // 다중 로그인 개수를 초과하였을 경우 처리 방법 초과시 새로운 로그인 차단 true,기존 세션 하나 삭제 false
+
+        // 세션 고정 보호
+        http.sessionManagement((auth)-> auth
+                .sessionFixation().changeSessionId());
+
+
 
 
 
