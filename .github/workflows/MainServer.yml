@@ -1,10 +1,29 @@
 name: MainServer
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+      - githubAction
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: 1111
+          MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v2
 
@@ -30,15 +49,17 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: download mysql
-        run: |
-          sudo apt-get install mysql-server
-
       - name: Build Spring Boot App
         run: |
           cd web/back
           chmod +x ./gradlew
           ./gradlew build
+        env:
+          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
       - name: Deploy to Server
         uses: appleboy/scp-action@master
