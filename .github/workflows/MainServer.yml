@@ -30,13 +30,9 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: download h2
+      - name: download mysql
         run: |
-          wget https://github.com/h2database/h2database/releases/download/version-2.2.224/h2-2023-09-17.zip
-          unzip h2-2023-09-17.zip
-          cd h2/bin
-          chmod +x h2.sh
-          ./h2.sh
+          sudo apt-get install mysql-server
 
       - name: Build Spring Boot App
         run: |
