@@ -14,7 +14,6 @@ public class BackApplication {
             // 예: SPRING_DATASOURCE_URL -> spring.datasource.url
             String propName = entry.getKey().toLowerCase().replace('_', '.');
             System.setProperty(propName, entry.getValue());
-			System.out.println(entry.getKey() + ":" + entry.getValue());
         });
 		SpringApplication.run(BackApplication.class, args);
 	}
