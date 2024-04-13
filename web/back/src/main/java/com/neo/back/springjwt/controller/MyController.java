@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class MyController {
 
-    @GetMapping("/my")
+    @GetMapping("/api/my")
     @ResponseBody
     public String myAPI() {
 

@@ -15,7 +15,7 @@ import java.util.Iterator;
 @ResponseBody
 public class MainController {
 
-    @GetMapping("/")
+    @GetMapping("/api")
     public String mainP(){
 
         //세션 정보 확인

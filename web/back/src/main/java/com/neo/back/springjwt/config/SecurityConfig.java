@@ -104,13 +104,13 @@ public class SecurityConfig {
                 );
 
 
-
         //경로별 인가 작업
         http.
                 authorizeHttpRequests((auth)-> auth
-                        .requestMatchers("/login","/","/join").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+                        .requestMatchers("/api/login","/api","/api/join").permitAll()
+                        .requestMatchers("/api/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll());
 
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
