@@ -11,6 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.lang.reflect.Field;
 
@@ -121,30 +125,35 @@ public class SSHService {
         return edgeServer; 
     }
 
-    // selectingEdgeServer 향후에 사용자의 서버의 최소 기준을 아큐먼트로 받고, 이를 완전 탐색을 통해 edgeserver을 할당한다.
+    // selectingEdgeServer 향후에 사용자의 서버의 최소 기준을 아큐먼트로 받고,
     /*
      * 현 시점에서 구현한 것은 정해진 최소 기준을 만족하는 엣지 서버를 리턴해주고 없다면 null을 리턴한다.
      * 향후 향상시킬 수 있는 방향
      * 1. 사용자의 빠른 서버 할당을 위해 지속적으로 ssh를 하여 데이터베이스? 에 저장하여 데이터 갖다가 사용하는 방식
-     * 2. edgeserver을 선택하는 알고리즘 향상
      */
 
     public synchronized EdgeServer selectingEdgeServer(){
         int edgeServerNumber = Integer.parseInt(System.getProperty("naver.edgeserver.number"));
-        Map<String, EdgeServer> edgeServers = new HashMap<>();
+        List<EdgeServer> edgeServers = new ArrayList<>();
+        EdgeServer selecteEdgeServer = null; 
 
-        int cpuLimit = 10; // 향후 개인 사용자가 사용할 Cpu의 최소 기준
-        int memoryLimit = 10; // 향후 개인 사용자가 사용할 Memory의 최소 기준
-        int storageLimit = 1000; // 향후 개인 사용자가 사용할 Storage의 최소 기준
+        int cpuLimit = 10; // 향후 개인 사용자가 사용할 Cpu의 최소 기준 퍼센트
+        int memoryLimit = 2000; // 향후 개인 사용자가 사용할 Memory의 최소 기준 MiB
+        int storageLimit = 3000; // 향후 개인 사용자가 사용할 Storage의 최소 기준 MiB
 
-        // 모든 edgeServer에 대한 데이터를 Map 형태로 구조화
+        int edgeServermemoryLeft = 1000; // 엣지 서버의 시스템 메모리 공간 할당
+        // 모든 edgeServer에 대한 데이터를 list 형태로 구조화 + 생성하고 남는 램이 edgeServermemoryLeft 이상 남아있어야 한다.
+        // + 사용자의 최소 기준을 넘어야한다.
+        //  -> 엣지 서버 시스템 메모리를 위한것
         for(int i = 1 ; i < edgeServerNumber + 1 ;i++){
             String host = System.getProperty("naver.edgeserver." + i + ".ip");
             String ID = System.getProperty("naver.edgeserver." + i + ".id");
             String user = System.getProperty("naver.edgeserver." + i + ".user.id");
-            String password = System.getProperty("naver.edgeserver." + i + ".password");	
-            edgeServers.put("edgeServer" + i, getDataOfEdgeServer(host,user,password,ID));
-
+            String password = System.getProperty("naver.edgeserver." + i + ".password");
+            EdgeServer tmp = getDataOfEdgeServer(host,user,password,ID);
+            if( cpuLimit < tmp.getCpuIdle() && storageLimit < tmp.getStorageIdle() && memoryLimit < tmp.getMemoryIdle()){
+                edgeServers.add(tmp);
+            }
             // System.out.println(System.getProperty("naver.edgeserver." + i + ".ip"));
             // System.out.println(System.getProperty("naver.edgeserver." + i + ".id"));
             // System.out.println(System.getProperty("naver.edgeserver." + i + ".user.id"));
@@ -153,19 +162,23 @@ public class SSHService {
 
         /*
          * 모든 edgeServer에 대한 데이터를 기반으로 선정 알고리즘 실행
-         * 현 상황에서는 각각의 edgeServer에 들어가서 위의 사용자가 사용할 최소 기준을 만족하면,
+         * 
+         * 항시 지켜야하는 조건 : 생성하고 남는 램이 1GB이상 남아있어야 한다. -> 조건문으로 달성
+         * 가장 작은 램(1GB 이상)이 남은데에 할당한다 -> 오름차순에서 확인하면서 달성 
+         * 
+         * 현 상황에서는 각각의 edgeServer에 들어가서 위의 사용자가 사용할 최소 기준(사용자가 요구한)을 만족하면, -> 위에서 달성
          * 서버를 개설시키도록 한다.
-         * 만약 최소 기준을 만족하는게 없다면, NULL값을 리턴한다. 
+         * 만약 기준을 만족하는게 없다면, NULL값을 리턴한다. 
          */
-        for(Map.Entry<String, EdgeServer> entry : edgeServers.entrySet()){
-            String key = entry.getKey(); // 현재 순회 중인 엔트리의 키
-            EdgeServer edgeServer = entry.getValue(); // 현재 순회 중인 엔트리의 값
-            logger.info("checking of appropriate EdgeServer" + key);
-            if(cpuLimit < edgeServer.getCpuIdle() && memoryLimit < edgeServer.getMemoryIdle() && storageLimit < edgeServer.getStorageIdle()){
-                return edgeServer;
+        Collections.sort(edgeServers, Comparator.comparingDouble(EdgeServer::getMemoryIdle));
+        for(EdgeServer edgeServer : edgeServers){
+            // edgeServers의 내부 엣지서버 데이터들이 오름차순인지 확인
+            // System.out.println(edgeServer.getMemoryIdle());
+            if(edgeServermemoryLeft < edgeServer.getMemoryIdle() - memoryLimit){
+                selecteEdgeServer = edgeServer;
+                return selecteEdgeServer;
             }
         }
-
-        return null;
+        return selecteEdgeServer;
     }
 }

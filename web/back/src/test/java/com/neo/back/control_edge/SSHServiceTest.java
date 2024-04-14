@@ -36,7 +36,7 @@ public class SSHServiceTest {
 		sshService.getDataOfEdgeServer(host, user, password,ID);
 
 	}
-
+	// SSHService 단위 테스트 : 알고리즘에 맞는 엣지 서버 선택 출력 예시 (디버그를 통해 확인 가능)
 	@Test
 	void selectingEdgeServer(){
 
@@ -52,7 +52,11 @@ public class SSHServiceTest {
 		SSHService sshService = new SSHService();
 
 		EdgeServer selecting = sshService.selectingEdgeServer();
-
-		System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
+		if(selecting != null){
+			System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
+		}
+		else{
+			System.out.println("selectingEdgeServer of NULL");
+		}
 	}
 }
