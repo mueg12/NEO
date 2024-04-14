@@ -1,6 +1,6 @@
 package com.neo.back.control_edge.service;
 
-class EdgeServer {
+public class EdgeServer {
     private String EdgeServerID;
     private double cpuUse;
     private double cpuIdle;

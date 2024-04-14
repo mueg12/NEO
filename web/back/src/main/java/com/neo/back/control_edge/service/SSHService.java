@@ -10,11 +10,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.lang.reflect.Field;
 
 public class SSHService {
+
+
     private static final Logger logger = LoggerFactory.getLogger(SSHService.class);
     // Map으로 관리된 각각의 엣지 서버의 데이터를 실제 EdgeServer 클래스에 넣는 함수
     private void setCpu(EdgeServer ES, Map<String, Double> lines){
@@ -97,7 +99,7 @@ public class SSHService {
             logger.info(edgeServer.getEdgeServerID() +" MEMORY IDLE 테스트 " + edgeServer.getMemoryIdle());
             logger.info(edgeServer.getEdgeServerID() +" MEMORY PERCENT 테스트 " + edgeServer.getMemoryUsePercent()+ " & " + edgeServer.getMemoryIdlePercent());
         
-            logger.info(edgeServer.getEdgeServerID() + "STORAGE USE 테스트 " + edgeServer.getStorageUse());
+            logger.info(edgeServer.getEdgeServerID() +" STORAGE USE 테스트 " + edgeServer.getStorageUse());
             logger.info(edgeServer.getEdgeServerID() +" STORAGE IDLE 테스트 " + edgeServer.getStorageIdle());
             logger.info(edgeServer.getEdgeServerID() +" STORAGE PERCENT 테스트 " + edgeServer.getStorageUsePercent()+ " & " + edgeServer.getStorageIdlePercent());
             // 연결 끊기 및 예외처리
@@ -119,5 +121,43 @@ public class SSHService {
         return edgeServer; 
     }
 
-    
+    public synchronized EdgeServer selectingEdgeServer(){
+        int edgeServerNumber = Integer.parseInt(System.getProperty("naver.edgeserver.number"));
+        Map<String, EdgeServer> edgeServers = new HashMap<>();
+
+        int cpuLimit = 10; // 향후 개인 사용자가 사용할 Cpu의 최소 기준
+        int memoryLimit = 10; // 향후 개인 사용자가 사용할 Memory의 최소 기준
+        int storageLimit = 1000; // 향후 개인 사용자가 사용할 Storage의 최소 기준
+
+        // 모든 edgeServer에 대한 데이터를 Map 형태로 구조화
+        for(int i = 1 ; i < edgeServerNumber + 1 ;i++){
+            String host = System.getProperty("naver.edgeserver." + i + ".ip");
+            String ID = System.getProperty("naver.edgeserver." + i + ".id");
+            String user = System.getProperty("naver.edgeserver." + i + ".user.id");
+            String password = System.getProperty("naver.edgeserver." + i + ".password");	
+            edgeServers.put("edgeServer" + i, getDataOfEdgeServer(host,user,password,ID));
+
+            // System.out.println(System.getProperty("naver.edgeserver." + i + ".ip"));
+            // System.out.println(System.getProperty("naver.edgeserver." + i + ".id"));
+            // System.out.println(System.getProperty("naver.edgeserver." + i + ".user.id"));
+            // System.out.println(System.getProperty("naver.edgeserver." + i + ".password"));
+        }
+
+        /*
+         * 모든 edgeServer에 대한 데이터를 기반으로 선정 알고리즘 실행
+         * 현 상황에서는 각각의 edgeServer에 들어가서 위의 사용자가 사용할 최소 기준을 만족하면,
+         * 서버를 개설시키도록 한다.
+         * 만약 최소 기준을 만족하는게 없다면, NULL값을 리턴한다. 
+         */
+        for(Map.Entry<String, EdgeServer> entry : edgeServers.entrySet()){
+            String key = entry.getKey(); // 현재 순회 중인 엔트리의 키
+            EdgeServer edgeServer = entry.getValue(); // 현재 순회 중인 엔트리의 값
+            logger.info("checking of appropriate EdgeServer" + key);
+            if(cpuLimit < edgeServer.getCpuIdle() && memoryLimit < edgeServer.getMemoryIdle() && storageLimit < edgeServer.getStorageIdle()){
+                return edgeServer;
+            }
+        }
+
+        return null;
+    }
 }

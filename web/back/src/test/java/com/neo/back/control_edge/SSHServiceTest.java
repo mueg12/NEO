@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 
+import com.neo.back.control_edge.service.EdgeServer;
 import com.neo.back.control_edge.service.SSHService;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -17,15 +18,41 @@ public class SSHServiceTest {
 	void getEdgeServerData(){
 
 		Dotenv dotenv = Dotenv.load();
+        dotenv.entries().forEach(entry -> {
+            // .env 파일의 키를 Spring 프로퍼티 명명 규칙에 맞게 변환
+            // 예: SPRING_DATASOURCE_URL -> spring.datasource.url
+            String propName = entry.getKey().toLowerCase().replace('_', '.');
+            System.setProperty(propName, entry.getValue());
+			// System.out.println(entry.getKey() + ":" + entry.getValue());
+        });
 
-		String host = dotenv.get("NAVER_EDGESERVER_1_IP");
-		String ID = dotenv.get("NAVER_EDGESERVER_1_ID");
-		String user = dotenv.get("NAVER_EDGESERVER_1_USER_ID");
-		String password = dotenv.get("NAVER_EDGESERVER_1_PASSWORD");	
+		String host = System.getProperty("naver.edgeserver.1.ip");
+		String ID = System.getProperty("naver.edgeserver.1.id");
+		String user = System.getProperty("naver.edgeserver.1.user.id");
+		String password = System.getProperty("naver.edgeserver.1.password");	
 
 		SSHService sshService = new SSHService();
 
 		sshService.getDataOfEdgeServer(host, user, password,ID);
 
+	}
+
+	@Test
+	void selectingEdgeServer(){
+
+		Dotenv dotenv = Dotenv.load();
+        dotenv.entries().forEach(entry -> {
+            // .env 파일의 키를 Spring 프로퍼티 명명 규칙에 맞게 변환
+            // 예: SPRING_DATASOURCE_URL -> spring.datasource.url
+            String propName = entry.getKey().toLowerCase().replace('_', '.');
+            System.setProperty(propName, entry.getValue());
+			// System.out.println(entry.getKey() + ":" + entry.getValue());
+        });
+
+		SSHService sshService = new SSHService();
+
+		EdgeServer selecting = sshService.selectingEdgeServer();
+
+		System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
 	}
 }
