@@ -1,6 +1,7 @@
-package com.neo.back.control_edge;
+package com.neo.back.control_edge.service;
 
 class EdgeServer {
+    private String EdgeServerID;
     private double cpuUse;
     private double cpuIdle;
     private double memoryUse;
@@ -8,6 +9,17 @@ class EdgeServer {
     private double storageUse;
     private double storageIdle;
 
+    public EdgeServer(String EdgeServerID){
+        this.EdgeServerID = EdgeServerID;
+    }
+//-------------------------------------
+    public String getEdgeServerID() {
+        return this.EdgeServerID;
+    }
+
+    public void setEdgeServerID(String EdgeServerID) {
+        this.EdgeServerID = EdgeServerID;
+    }
 
     public double getCpuUse() {
         return this.cpuUse;
@@ -60,6 +72,7 @@ class EdgeServer {
     public double getMemoryUsePercent() {
         return this.memoryUse * 100 /(this.memoryUse + this.memoryIdle);
     }
+
     public double getMemoryIdlePercent() {
         return this.memoryIdle * 100 /(this.memoryUse + this.memoryIdle);
     }
@@ -67,7 +80,9 @@ class EdgeServer {
     public double getStorageUsePercent() {
         return this.storageUse * 100 /(this.storageUse + this.storageIdle);
     }
+
     public double getStorageIdlePercent() {
         return this.storageIdle * 100 /(this.storageUse + this.storageIdle);
     }
+
 }

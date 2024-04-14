@@ -1,4 +1,4 @@
-package com.neo.back.control_edge;
+package com.neo.back.control_edge.service;
 
 class EdgeServerCmd {
     private String cpu;
