@@ -121,6 +121,14 @@ public class SSHService {
         return edgeServer; 
     }
 
+    // selectingEdgeServer 향후에 사용자의 서버의 최소 기준을 아큐먼트로 받고, 이를 완전 탐색을 통해 edgeserver을 할당한다.
+    /*
+     * 현 시점에서 구현한 것은 정해진 최소 기준을 만족하는 엣지 서버를 리턴해주고 없다면 null을 리턴한다.
+     * 향후 향상시킬 수 있는 방향
+     * 1. 사용자의 빠른 서버 할당을 위해 지속적으로 ssh를 하여 데이터베이스? 에 저장하여 데이터 갖다가 사용하는 방식
+     * 2. edgeserver을 선택하는 알고리즘 향상
+     */
+
     public synchronized EdgeServer selectingEdgeServer(){
         int edgeServerNumber = Integer.parseInt(System.getProperty("naver.edgeserver.number"));
         Map<String, EdgeServer> edgeServers = new HashMap<>();
