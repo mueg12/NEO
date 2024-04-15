@@ -54,24 +54,26 @@ jobs:
       - name: Build Spring Boot App
         run: |
           cd web/back
+          touch src/main/resources/env.properties
+          cat <<EOT >> src/main/resources/env.properties
+          SPRING_JWT_SECRET= ${{ secrets.SPRING_JWT_SECRET }}
+          NAVER_CLIENT_ID= ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET= ${{ secrets.NAVER_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID= ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET= ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          EDGESERVER_1_IP= ${{ secrets.NAVER_EDGESERVER_1_IP }}
+          EDGESERVER_1_ID= ${{ secrets.NAVER_EDGESERVER_1_ID }}
+          EDGESERVER_1_USER_ID= ${{ secrets.NAVER_EDGESERVER_1_USER_ID }}
+          EDGESERVER_1_PASSWORD= ${{ secrets.NAVER_EDGESERVER_1_PASSWORD }}
+          EDGESERVER_2_IP= ${{ secrets.NAVER_EDGESERVER_2_IP }}
+          EDGESERVER_2_ID= ${{ secrets.NAVER_EDGESERVER_2_ID }}
+          EDGESERVER_2_USER_ID= ${{ secrets.NAVER_EDGESERVER_2_USER_ID }}
+          EDGESERVER_2_PASSWORD= ${{ secrets.NAVER_EDGESERVER_2_PASSWORD }}
+          EDGESERVER_NUMBER= ${{ secrets.EDGESERVER_NUMBER }}
+          EOT
           chmod +x ./gradlew
           ./gradlew build
-        env:
-          SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
-          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          EDGESERVER_1_IP: ${{ secrets.NAVER_EDGESERVER_1_IP }}
-          EDGESERVER_1_ID: ${{ secrets.NAVER_EDGESERVER_1_ID }}
-          EDGESERVER_1_USER_ID: ${{ secrets.NAVER_EDGESERVER_1_USER_ID }}
-          EDGESERVER_1_PASSWORD: ${{ secrets.NAVER_EDGESERVER_1_PASSWORD }}
-          EDGESERVER_2_IP: ${{ secrets.NAVER_EDGESERVER_2_IP }}
-          EDGESERVER_2_ID: ${{ secrets.NAVER_EDGESERVER_2_ID }}
-          EDGESERVER_2_USER_ID: ${{ secrets.NAVER_EDGESERVER_2_USER_ID }}
-          EDGESERVER_2_PASSWORD: ${{ secrets.NAVER_EDGESERVER_2_PASSWORD }}
-          EDGESERVER_NUMBER: ${{ secrets.EDGESERVER_NUMBER }}
-
+          
 
       - name: Deploy to Server
         uses: appleboy/scp-action@master
