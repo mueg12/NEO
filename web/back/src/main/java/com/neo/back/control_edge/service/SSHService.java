@@ -146,18 +146,18 @@ public class SSHService {
         // + 사용자의 최소 기준을 넘어야한다.
         //  -> 엣지 서버 시스템 메모리를 위한것
         for(int i = 1 ; i < edgeServerNumber + 1 ;i++){
-            String host = System.getProperty("naver.edgeserver." + i + ".ip");
-            String ID = System.getProperty("naver.edgeserver." + i + ".id");
-            String user = System.getProperty("naver.edgeserver." + i + ".user.id");
-            String password = System.getProperty("naver.edgeserver." + i + ".password");
+            String host = System.getProperty("edgeserver." + i + ".ip");
+            String ID = System.getProperty("edgeserver." + i + ".id");
+            String user = System.getProperty("edgeserver." + i + ".user.id");
+            String password = System.getProperty("edgeserver." + i + ".password");
             EdgeServer tmp = getDataOfEdgeServer(host,user,password,ID);
             if( cpuLimit < tmp.getCpuIdle() && storageLimit < tmp.getStorageIdle() && memoryLimit < tmp.getMemoryIdle()){
                 edgeServers.add(tmp);
             }
-            // System.out.println(System.getProperty("naver.edgeserver." + i + ".ip"));
-            // System.out.println(System.getProperty("naver.edgeserver." + i + ".id"));
-            // System.out.println(System.getProperty("naver.edgeserver." + i + ".user.id"));
-            // System.out.println(System.getProperty("naver.edgeserver." + i + ".password"));
+            // System.out.println(System.getProperty("edgeserver." + i + ".ip"));
+            // System.out.println(System.getProperty("edgeserver." + i + ".id"));
+            // System.out.println(System.getProperty("edgeserver." + i + ".user.id"));
+            // System.out.println(System.getProperty("edgeserver." + i + ".password"));
         }
 
         /*

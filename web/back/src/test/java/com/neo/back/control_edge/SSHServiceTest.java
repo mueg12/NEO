@@ -17,10 +17,10 @@ public class SSHServiceTest {
     @Test
 	void getEdgeServerData(){
 
-		String host = System.getProperty("naver.edgeserver.1.ip");
-		String ID = System.getProperty("naver.edgeserver.1.id");
-		String user = System.getProperty("naver.edgeserver.1.user.id");
-		String password = System.getProperty("naver.edgeserver.1.password");	
+		String host = System.getProperty("edgeserver.1.ip");
+		String ID = System.getProperty("edgeserver.1.id");
+		String user = System.getProperty("edgeserver.1.user.id");
+		String password = System.getProperty("edgeserver.1.password");	
 
 		SSHService sshService = new SSHService();
 
