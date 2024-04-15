@@ -133,7 +133,7 @@ public class SSHService {
      */
 
     public synchronized EdgeServer selectingEdgeServer(){
-        int edgeServerNumber = Integer.parseInt(System.getProperty("naver.edgeserver.number"));
+        int edgeServerNumber = Integer.parseInt(System.getProperty("edgeserver.number"));
         List<EdgeServer> edgeServers = new ArrayList<>();
         EdgeServer selecteEdgeServer = null; 
 
