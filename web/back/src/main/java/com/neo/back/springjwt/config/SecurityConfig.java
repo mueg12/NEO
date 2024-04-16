@@ -105,13 +105,13 @@ public class SecurityConfig {
 
 */
         //경로별 인가 작업
-/*        http.
-                authorizeHttpRequests((auth)-> auth
-                        .requestMatchers("/api/login","/api","/api/join,/api/containers").permitAll()
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll());
-*/
+        // http.
+        //         authorizeHttpRequests((auth)-> auth
+        //                 .requestMatchers("/api/login","/api","/api/join,/api/containers").permitAll()
+        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
+        //                 .requestMatchers("/api/**").authenticated()
+        //                 .anyRequest().permitAll());
+
         http
                 .authorizeHttpRequests((auth) -> auth
                         .anyRequest().permitAll());

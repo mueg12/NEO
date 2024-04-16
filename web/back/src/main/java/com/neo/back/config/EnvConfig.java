@@ -9,5 +9,4 @@ import org.springframework.context.annotation.PropertySources;
 	@PropertySource("classpath:env.properties") // env.properties 파일 소스 등록
 })
 public class EnvConfig {
-
 }
