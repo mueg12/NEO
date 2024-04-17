@@ -3,99 +3,186 @@ package com.neo.back.control_edge.service;
 import com.jcraft.jsch.*;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 import java.lang.reflect.Field;
 
+@Configuration
 public class SSHService {
-
-
+    
     private static final Logger logger = LoggerFactory.getLogger(SSHService.class);
+    
     // Map으로 관리된 각각의 엣지 서버의 데이터를 실제 EdgeServer 클래스에 넣는 함수
-    private void setCpu(EdgeServer ES, Map<String, Double> lines){
+    private void setCpuEdgeServer(EdgeServer ES, Map<String, Double> lines){
         ES.setCpuUse(100 - lines.get("cpu"));
         ES.setCpuIdle( lines.get("cpu") );
     }
 
-    private void setMemory(EdgeServer ES, Map<String, Double> lines){
+    private void setMemoryEdgeServer(EdgeServer ES, Map<String, Double> lines){
         ES.setMemoryUse(lines.get("memoryTotal")-lines.get("memoryFree"));
         ES.setMemoryIdle(lines.get("memoryFree"));
     }
     
-    private void setStorage(EdgeServer ES, Map<String, Double> lines){
+    private void setStorageEdgeServer(EdgeServer ES, Map<String, Double> lines){
         ES.setStorageUse(lines.get("storageTotal") - lines.get("storageAvailable"));
         ES.setStorageIdle( lines.get("storageAvailable") );
     }
-    
-    // getDataOfEdgeServer 아큐먼트로 받은 엣지 서버에 대한 Cpu, Memory, Storage를 EdgeServer 클래스화 하여 리턴하는 함수
-    /*
-     * 데이터를 위해 저장된 명령어를 SSH 접근을 통해 얻고, 이를 EdgeServer에 담아서 리턴한다.
-     */
-    public EdgeServer getDataOfEdgeServer(String host, String user, String password, String ID){
+
+    private void setPortEdgeServer(EdgeServer edgeServer, BufferedReader reader, List<String> lines) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);
+        }
+        edgeServer.setPortUses(lines);
+    }
+
+    private String getCMDExceptPort(Field[] fields_tmp,EdgeServerCmd cmd_tmp) throws IllegalArgumentException, IllegalAccessException, StreamReadException, DatabindException, IOException{
+        String cmdTotalExceptPort = "";
+        fields_tmp[5].setAccessible(true);
+        String portCMD = (String)fields_tmp[5].get(cmd_tmp);
+        for(Field field : fields_tmp){
+            field.setAccessible(true);
+            if(portCMD.equals((String) field.get(cmd_tmp))){
+            }
+            else{
+                cmdTotalExceptPort += (String) field.get(cmd_tmp) + " ; "; 
+            }
+        }
+        return cmdTotalExceptPort;
+    }
+    private String getCMDPort(Field[] fields_tmp, EdgeServerCmd cmd_tmp) throws IllegalArgumentException, IllegalAccessException, StreamReadException, DatabindException, IOException{
+        fields_tmp[5].setAccessible(true);
+        String portCMD = (String)fields_tmp[5].get(cmd_tmp);
+        return portCMD;
+    }
+
+    private Session getJsch(String host, String user, String password) throws JSchException {
+        Session session;
+        JSch jsch = new JSch();
+        session = jsch.getSession(user, host, 22);
+        session.setPassword(password);
+        session.setConfig("StrictHostKeyChecking", "no");
+        session.connect();
+        return session;
+    }
+
+    private Map<String, Double> getLines(Field[] fields, BufferedReader reader) throws IOException {
+        Map<String, Double> lines = new HashMap<>();
+        String line;
+        for(int i = 0; (line = reader.readLine()) != null;i++){
+            Field field = fields[i];
+            lines.put(field.getName(), Double.valueOf(line)) ;
+        }
+        return lines;
+    }
+
+    private void getLinesByCMDExceptPortWithChannel(EdgeServer edgeServer, Session session, String command, Field[] fields)
+                                throws JSchException, IOException {
+        Channel channel = session.openChannel("exec");
+        ((ChannelExec) channel).setCommand(command);
+        InputStream commandOutput = channel.getInputStream();
+        channel.connect();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(commandOutput));
+        Map<String, Double> lines = getLines(fields, reader);
         
+        setCpuEdgeServer(edgeServer, lines);
+        setMemoryEdgeServer(edgeServer, lines);
+        setStorageEdgeServer(edgeServer, lines);
+
+        reader.close();
+        channel.disconnect();
+    }
+
+
+    private void getLinesByCMDPortWithChannel(EdgeServer edgeServer, Session session, String command, Field[] fields) 
+                                                throws JSchException, IOException {
+        Channel channel = session.openChannel("exec");
+        ((ChannelExec) channel).setCommand(command);
+        InputStream commandOutput = channel.getInputStream();
+        channel.connect();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(commandOutput));
+        List<String> lines =  new ArrayList<>();
+        setPortEdgeServer(edgeServer, reader, lines);
+
+        reader.close();
+        channel.disconnect();
+    }
+    
+    public static List<Integer> convertStringListToIntList(List<String> stringList) {
+        List<Integer> integerList = new ArrayList<>();
+        for (String str : stringList) {
+            integerList.add(Integer.parseInt(str));
+        }
+        return integerList;
+    }
+
+    private int selectRandomNumber(int minRange, int maxRange, List<Integer> integerList) {
+        Random random = new Random();
+        int randomNumber;
+
+        do {
+            randomNumber = random.nextInt(maxRange - minRange + 1) + minRange;
+        } while (integerList.contains(randomNumber));
+
+        return randomNumber;
+    }
+
+    private void selectPort(EdgeServer edgeServer) {
+        List<Integer> integerList = convertStringListToIntList(edgeServer.getPortUses());
+        int minRange = 0;
+        int maxRange = 25565;
+        int randomNumber = selectRandomNumber(minRange, maxRange, integerList);
+        edgeServer.setPortSelect(randomNumber);
+    }
+
+
+
+    public EdgeServer getDataOfEdgeServer(String host, String user, String password, String ID){
         EdgeServer edgeServer = new EdgeServer(ID); 
-        ObjectMapper objectMapper = new ObjectMapper();
         Session session = null;
         String command = "";
-
+        String portCMD = "";
+        ObjectMapper objectMapper = new ObjectMapper();
+        String edgeCmdControlPath = "edgeServer/control_edgeCmd.json";
+        ClassPathResource jsonFile = new ClassPathResource(edgeCmdControlPath);
         try {
-            // ssh 접근해서 데이터를 얻기위한 명령어 저장파일 관련 코드
-            ClassPathResource jsonFile = new ClassPathResource("edgeServer/control_edgeCmd.json");
             EdgeServerCmd cmd = objectMapper.readValue(jsonFile.getInputStream(), EdgeServerCmd.class);
-
             Class<?> clazz = cmd.getClass();
             Field[] fields = clazz.getDeclaredFields();
 
-            for(Field field : fields){
-                field.setAccessible(true); // 필드의 접근성 설정
-                command += (String) field.get(cmd) + " ; "; // 변수의 값 가져오기
-            }
+            command = getCMDExceptPort(fields,cmd);
+            portCMD = getCMDPort(fields,cmd);
+            // System.out.println(portCMD);
+            // System.out.println("test");
+            // System.out.println(command);
+            session = getJsch(host, user, password);
 
-            // System.out.println();
-            // System.out.println(command); 해당 명령어가 어떤 식으로 들어가나 확인용
-            // System.out.println();
+            getLinesByCMDExceptPortWithChannel(edgeServer, session, command, fields);
+            getLinesByCMDPortWithChannel(edgeServer, session, portCMD, fields);
+            selectPort(edgeServer);
+            
+            logger.info(edgeServer.getEdgeServerID() +" portUses 테스트 " + edgeServer.getPortUses());
+            logger.info(edgeServer.getEdgeServerID() +" portSelect 테스트 " + edgeServer.getPortSelect());
 
-            // ssh 접근을 위한 jsch 연결 코드
-            JSch jsch = new JSch();
-            session = jsch.getSession(user, host, 22);
-            session.setPassword(password);
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-
-            // 연결 채널 열기 & cmd 전송
-            Channel channel = session.openChannel("exec");
-            ((ChannelExec) channel).setCommand(command);
-
-            InputStream commandOutput = channel.getInputStream();
-            channel.connect();
-            // 출력값 가져오기
-            BufferedReader reader = new BufferedReader(new InputStreamReader(commandOutput));
-            String line;
-            Map<String, Double> lines = new HashMap<>();
-            // 각각 데이터를 Map 구조를 통해 데이터 구조화
-            for(int i = 0;(line = reader.readLine()) != null;i++){
-                Field field = fields[i];
-                // System.out.println(line); // 출력 로그로 출력
-                // System.out.println(field.getName()); // 출력 로그로 출력
-                // System.out.println(line.getClass()); // 출력 로그로 출력
-                lines.put(field.getName(), Double.valueOf(line)) ;
-            }
-            // EdgeServer 클래스에 저장
-            setCpu(edgeServer, lines);
-            setMemory(edgeServer, lines);
-            setStorage(edgeServer, lines);
-            // 로그를 통해 EdgeServer 저장되었는지 확인
             logger.info(edgeServer.getEdgeServerID() +" CPU USE 테스트 " + edgeServer.getCpuUse());
             logger.info(edgeServer.getEdgeServerID() +" CPU IDLE 테스트 " + edgeServer.getCpuIdle());
 
@@ -106,9 +193,7 @@ public class SSHService {
             logger.info(edgeServer.getEdgeServerID() +" STORAGE USE 테스트 " + edgeServer.getStorageUse());
             logger.info(edgeServer.getEdgeServerID() +" STORAGE IDLE 테스트 " + edgeServer.getStorageIdle());
             logger.info(edgeServer.getEdgeServerID() +" STORAGE PERCENT 테스트 " + edgeServer.getStorageUsePercent()+ " & " + edgeServer.getStorageIdlePercent());
-            // 연결 끊기 및 예외처리
-            reader.close();
-            channel.disconnect();
+
         } catch (JSchException | java.io.IOException e) {
             e.printStackTrace();
         } catch(IllegalAccessException e){
@@ -125,15 +210,8 @@ public class SSHService {
         return edgeServer; 
     }
 
-    // selectingEdgeServer 향후에 사용자의 서버의 최소 기준을 아큐먼트로 받고,
-    /*
-     * 현 시점에서 구현한 것은 정해진 최소 기준을 만족하는 엣지 서버를 리턴해주고 없다면 null을 리턴한다.
-     * 향후 향상시킬 수 있는 방향
-     * 1. 사용자의 빠른 서버 할당을 위해 지속적으로 ssh를 하여 데이터베이스? 에 저장하여 데이터 갖다가 사용하는 방식
-     */
-
-    public synchronized EdgeServer selectingEdgeServer(){
-        int edgeServerNumber = Integer.parseInt(System.getProperty("edgeserver.number"));
+    public synchronized EdgeServer selectingEdgeServer(List<String> host,List<String> ID,List<String> user,List<String> password){
+        int edgeServerNumber = ID.size();
         List<EdgeServer> edgeServers = new ArrayList<>();
         EdgeServer selecteEdgeServer = null; 
 
@@ -145,19 +223,17 @@ public class SSHService {
         // 모든 edgeServer에 대한 데이터를 list 형태로 구조화 + 생성하고 남는 램이 edgeServermemoryLeft 이상 남아있어야 한다.
         // + 사용자의 최소 기준을 넘어야한다.
         //  -> 엣지 서버 시스템 메모리를 위한것
-        for(int i = 1 ; i < edgeServerNumber + 1 ;i++){
-            String host = System.getProperty("edgeserver." + i + ".ip");
-            String ID = System.getProperty("edgeserver." + i + ".id");
-            String user = System.getProperty("edgeserver." + i + ".user.id");
-            String password = System.getProperty("edgeserver." + i + ".password");
-            EdgeServer tmp = getDataOfEdgeServer(host,user,password,ID);
+
+        for(int Index = 0 ; Index < edgeServerNumber ; Index++){
+            String hostIndex = host.get(Index);
+            String IDIndex = ID.get(Index);
+            String userIndex = user.get(Index);
+            String passwordIndex = password.get(Index);
+            System.out.println(Index);
+            EdgeServer tmp = getDataOfEdgeServer(hostIndex,userIndex,passwordIndex,IDIndex);
             if( cpuLimit < tmp.getCpuIdle() && storageLimit < tmp.getStorageIdle() && memoryLimit < tmp.getMemoryIdle()){
                 edgeServers.add(tmp);
             }
-            // System.out.println(System.getProperty("edgeserver." + i + ".ip"));
-            // System.out.println(System.getProperty("edgeserver." + i + ".id"));
-            // System.out.println(System.getProperty("edgeserver." + i + ".user.id"));
-            // System.out.println(System.getProperty("edgeserver." + i + ".password"));
         }
 
         /*

@@ -1,5 +1,7 @@
 package com.neo.back.control_edge.service;
 
+import java.util.List;
+
 public class EdgeServer {
     private String EdgeServerID;
     private double cpuUse;
@@ -8,11 +10,30 @@ public class EdgeServer {
     private double memoryIdle;
     private double storageUse;
     private double storageIdle;
+    private List<String> portUses;
+    private int portSelect;
+
+    public int getPortSelect() {
+        return this.portSelect;
+    }
+
+    public void setPortSelect(int portSelect) {
+        this.portSelect = portSelect;
+    }
 
     public EdgeServer(String EdgeServerID){
         this.EdgeServerID = EdgeServerID;
     }
 //-------------------------------------
+
+    public List<String> getPortUses() {
+        return this.portUses;
+    }
+
+    public void setPortUses(List<String> portUses) {
+        this.portUses = portUses;
+    }
+
     public String getEdgeServerID() {
         return this.EdgeServerID;
     }
