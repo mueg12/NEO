@@ -6,6 +6,15 @@ class EdgeServerCmd {
     private String memoryFree;
     private String storageTotal;
     private String storageAvailable;
+    private String portUse;
+
+    public Object getPortUse() {
+        return this.portUse;
+    }
+
+    public void setPortUse(String portUse) {
+        this.portUse = portUse;
+    }
 
     public String getCpu() {
         return this.cpu;

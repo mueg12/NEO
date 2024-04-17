@@ -4,6 +4,6 @@
     "memoryTotal":"top -bn1 | grep \"MiB Mem\" | tr ',' ' ' | tr -s ' ' | awk '{print $4}'",
     "memoryFree":"top -bn1 | grep \"MiB Mem\" | tr ',' ' ' | tr -s ' ' | awk '{print $6}'",
     "storageTotal":"df -m | grep \"/dev\" | grep -v \"tmpfs\" | tr -s ' ' | awk '{print $2}'",
-    "storageAvailable":" df -m | grep \"/dev\" | grep -v \"tmpfs\" | tr -s ' ' | awk '{print $4}'"
-
+    "storageAvailable":" df -m | grep \"/dev\" | grep -v \"tmpfs\" | tr -s ' ' | awk '{print $4}'",
+    "portUse":"netstat -tuln | tail -n +3 | tr -s ' ' | awk '{print $4}' | awk -F ':' '{print $2}'"
 }
