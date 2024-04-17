@@ -8,6 +8,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import com.neo.back.control_edge.service.EdgeServer;
 import com.neo.back.control_edge.service.SSHService;
+import com.neo.back.control_edge.service.selectEdgeServer;
 import com.neo.back.config.EnvConfig;
 
 
@@ -36,9 +37,9 @@ public class SSHServiceTest {
 	@Test
 	void selectingEdgeServer(){
 
-		SSHService sshService = new SSHService();
+		selectEdgeServer selectEdgeServer = new selectEdgeServer();
 
-		EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
+		EdgeServer selecting = selectEdgeServer.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
 		if(selecting != null){
 			System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
 		}
