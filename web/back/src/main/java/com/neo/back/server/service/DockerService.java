@@ -1,4 +1,4 @@
-package com.neo.back.docker.service;
+package com.neo.back.server.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

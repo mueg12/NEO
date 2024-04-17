@@ -1,20 +1,17 @@
-package com.neo.back.docker.controller;
-import com.neo.back.docker.dto.MinecraftConfigDTO;
-
-import org.json.JSONObject;
+package com.neo.back.server.controller;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.neo.back.server.dto.CreateDockerDTO;
+
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 @RestController
 public class DockerConfigController {
@@ -27,11 +24,13 @@ public class DockerConfigController {
                 .build();
     }
 
-    @PostMapping("/api/create-container")
-    public Mono<String> createAndStartContainer(@RequestBody MinecraftConfigDTO config) {
+    @PostMapping("/api/create-container1")
+    public Mono<String> createAndStartContainer(@RequestBody CreateDockerDTO config) {
         // server.properties 파일 내용 생성
-        String propertiesContent = "difficulty=" + config.getDifficulty() + "\n" +
-                "game_mode=" + config.getGameMode();
+        String propertiesContent = "game=" + config.getGame() + "\n" +
+                "ramCapacity=" + config.getRamCapacity() + "\n" +
+                "paymentSystem=" + config.getPaymentSystem() + "\n" +
+                "time=" + config.getTime();
 
         System.out.println(propertiesContent);
 

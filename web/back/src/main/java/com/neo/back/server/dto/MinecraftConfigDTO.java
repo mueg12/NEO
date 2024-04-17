@@ -1,4 +1,4 @@
-package com.neo.back.docker.dto;
+package com.neo.back.server.dto;
 
 import lombok.Getter;
 import lombok.Setter;

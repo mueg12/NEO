@@ -1,8 +1,9 @@
-package com.neo.back.docker.service;
+package com.neo.back.server.service;
 
 
-import com.neo.back.docker.dto.MinecraftConfigDTO;
 import org.springframework.stereotype.Service;
+
+import com.neo.back.server.dto.MinecraftConfigDTO;
 
 import java.io.FileWriter;
 import java.io.IOException;
