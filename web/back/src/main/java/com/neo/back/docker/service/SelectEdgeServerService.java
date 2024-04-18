@@ -24,7 +24,7 @@ public class SelectEdgeServerService {
 
     public String selectingEdgeServer(){
 
-		SSHService sshService = new SSHService();
+		selectingEdgeServer sshService = new SSHService();
 
 		EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
 		if(selecting != null){

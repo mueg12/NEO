@@ -30,39 +30,6 @@ public class DockerController {
                 .build();
     }
 
-    @PostMapping("/api/create-container")
-    public Mono<String> createAndStartContainer(@RequestBody MinecraftConfigDTO config) {
-        // server.properties 파일 내용 생성
-        String propertiesContent = "difficulty=" + config.getDifficulty() + "\n" +
-                "game_mode=" + config.getGameMode();
-
-        System.out.println(propertiesContent);
-
-        // Docker 컨테이너 생성을 위한 JSON 객체 구성
-        var createContainerRequest = Map.of("Image", "hello-world");
-        // 여기에 추가 설정
-        System.out.println("hello");
-        // Docker 컨테이너 생성 요청
-        return dockerWebClient.post()
-                .uri("/containers/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(createContainerRequest))
-                .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(createResponse -> {
-                    String containerId = parseContainerId(createResponse);
-                    System.out.println(containerId);
-
-                    return dockerWebClient.post()
-                            .uri("/containers/" + containerId.substring(0,12) + "/restart")
-
-                            .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
-                            .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
-                            .thenReturn("Container started with ID: " + containerId);
-                }); //생성한 뒤 시작하는 코드 아직 미완.
-
-    }
-
     @PostMapping("/api/start-container")
     public Mono<String> StartContainer() {
 
