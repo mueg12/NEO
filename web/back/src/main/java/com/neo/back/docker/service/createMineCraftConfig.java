@@ -16,12 +16,13 @@ public class createMineCraftConfig {
     String privateKey = "개인 키 파일 경로";
 
 
-    public void createServerConfig(MinecraftConfigDTO config) throws IOException {
-        try (FileWriter fileWriter = new FileWriter("server.properties")) {
-            fileWriter.write("difficulty=" + config.getDifficulty() + "\n");
-            fileWriter.write("game_mode=" + config.getGameMode() + "\n");
+    public void createServerConfig() throws IOException {
+
+
+
         }
+
 
     }
 
-}
+
