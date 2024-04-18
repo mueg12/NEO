@@ -1,102 +1,162 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Header from './Header';
+
 
 function MainPage() {
   return (
-    <div className="main-page">
-      <div
+  <div
     style={{
+    width: 1920,
+    height: 1080,
+    position: "relative",
+    overflow: "hidden",
+    background: "#fff",
+  }}
+>
+  <div
+      style={{
       width: 1920,
       height: 1080,
-      position: "relative",
-      overflow: "hidden",
-      background: "#fff",
+      position: "absolute",
+      left: "-1px",
+      top: "-1px",
+      background: "rgba(0,0,0,0.9)",
     }}
-  >
+  />
+  <div
+      style={{
+      width: 450,
+      height: 325,
+      position: "absolute",
+      left: 1454,
+      top: 734,
+      borderRadius: 30,
+      background: "linear-gradient(to bottom, #d74949 0%, #712626 100%)",
+    }}
+  />
+  <img
+    src="image-3.png"
+    style={{
+      width: 450,
+      height: 325,
+      position: "absolute",
+      left: 974,
+      top: 734,
+      borderRadius: 30,
+      objectFit: "cover",
+    }}
+  />
+  <img
+    src="image-2.png"
+    style={{
+      width: 450,
+      height: 325,
+      position: "absolute",
+      left: 494,
+      top: 734,
+      borderRadius: 30,
+      objectFit: "cover",
+    }}
+  />
+  <img
+    src="image-1.png"
+    style={{
+      width: 450,
+      height: 325,
+      position: "absolute",
+      left: 14,
+      top: 734,
+      borderRadius: 30,
+      objectFit: "cover",
+    }}
+  />
+  <Header></Header>
+  <div style={{ width: 300, height: 80 }}>
     <div
       style={{
-        width: 1920,
-        height: 720,
+        width: 300,
+        height: 80,
         position: "absolute",
-        left: 0,
-        top: 1140,
-        overflow: "hidden",
-        background: "#fff",
+        left: "465.5px",
+        top: "586.5px",
+        borderRadius: 5,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.9)",
+        borderTop: "3px solid white",
+        borderLeft: "3px solid white",
+        borderRight: "3px solid white",
+        borderBottom: "3px solid white",
       }}
     />
-    <div
-      style={{
-        width: 1920,
-        height: 720,
-        position: "absolute",
-        left: 0,
-        top: 1140,
-        overflow: "hidden",
-        background: "#fff",
-      }}
-    />
-    <div
-      style={{
-        width: 1920,
-        height: 720,
-        position: "absolute",
-        left: 0,
-        top: 1140,
-        overflow: "hidden",
-        background: "#fff",
-      }}
-    >
-      <p
-        style={{
-          position: "absolute",
-          left: 713,
-          top: 176,
-          fontSize: 55,
-          fontWeight: 600,
-          textAlign: "center",
-          color: "#000",
-        }}
-      >
-        马卡巴卡，阿妈哈马
-      </p>
-    </div>
-    <div
-      style={{
-        width: 1920,
-        height: 90,
-        position: "absolute",
-        left: 0,
-        top: 0,
-        overflow: "hidden",
-        background: "#fff",
-      }}
-    >
-      <div
-        style={{
-          width: 1920,
-          height: 90,
-          position: "absolute",
-          left: "-1px",
-          top: "-1px",
-          background: "linear-gradient(to right, #d7aeff 0%, #816999 100%)",
-        }}
-      />
-    </div>
     <p
       style={{
         position: "absolute",
-        left: 1750,
-        top: -20,
+        left: 495,
+        top: 560,
         fontSize: 40,
         fontWeight: 600,
         textAlign: "center",
-        color: "#fff",
+        color: "rgba(255,255,255,0.9)",
       }}
     >
-      <Link to="/login">로그인</Link>
+      서버 참여하기
     </p>
   </div>
+  <div style={{ width: 300, height: 80 }}>
+    <div
+      style={{
+        width: 300,
+        height: 80,
+        position: "absolute",
+        left: "95.5px",
+        top: "586.5px",
+        borderRadius: 5,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.9)",
+        borderTop: "3px solid white",
+        borderLeft: "3px solid white",
+        borderRight: "3px solid white",
+        borderBottom: "3px solid white",
+      }}
+    />
+    <p
+      style={{
+        position: "absolute",
+        left: 145,
+        top: 560,
+        fontSize: 40,
+        fontWeight: 600,
+        textAlign: "center",
+        color: "rgba(255,255,255,0.9)",
+      }}
+    >
+      서버 만들기
+    </p>
   </div>
+  <p
+    style={{
+      position: "absolute",
+      left: 108,
+      top: 334,
+      fontSize: 65,
+      fontWeight: 600,
+      textAlign: "center",
+      color: "rgba(255,255,255,0.97)",
+    }}
+  >
+    모든 게이머를 위한 완벽한 공간
+  </p>
+  <div
+    style={{
+      width: 100,
+      height: 100,
+      position: "absolute",
+      left: 786,
+      top: 926,
+      overflow: "hidden",
+    }}
+  />
+</div>
   );
 }
 

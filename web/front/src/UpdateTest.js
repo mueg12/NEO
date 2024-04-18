@@ -12,7 +12,7 @@ function UpdateTest() {
     const totalSpace = 8;
     const usedSpaceInGB = usedSpace;
     const usedPercentage = (usedSpaceInGB / totalSpace) * 100;
-    //const [files, setFiles] = useState([]);
+    const [files, setFiles] = useState([]);
 
 
     const handleFileChange = (event) => {
@@ -153,7 +153,6 @@ function UpdateTest() {
     />
     <img
       src="모드-아이콘.png"
-      alt="??"
       style={{
         width: 100,
         height: "95.86px",
