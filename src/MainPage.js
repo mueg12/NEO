@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Header from './Header';
+
 
 function MainPage() {
   return (
-    <div
-  style={{
+  <div
+    style={{
     width: 1920,
     height: 1080,
     position: "relative",
@@ -13,7 +14,7 @@ function MainPage() {
   }}
 >
   <div
-    style={{
+      style={{
       width: 1920,
       height: 1080,
       position: "absolute",
@@ -23,7 +24,7 @@ function MainPage() {
     }}
   />
   <div
-    style={{
+      style={{
       width: 450,
       height: 325,
       position: "absolute",
@@ -69,68 +70,7 @@ function MainPage() {
       objectFit: "cover",
     }}
   />
-  <div style={{ width: 1920, height: 120 }}>
-    <div
-      style={{
-        width: 1920,
-        height: 120,
-        position: "absolute",
-        left: "-0.5px",
-        top: "-0.5px",
-        background: "#3e3535",
-      }}
-    />
-    <p
-      style={{
-        position: "absolute",
-        left: 546,
-        top: 0,
-        fontSize: 40,
-        textAlign: "left",
-        color: "#fff",
-      }}
-    >
-      게임목록 조회
-    </p>
-    <p
-      style={{
-        position: "absolute",
-        left: 323,
-        top: 0,
-        fontSize: 40,
-        textAlign: "left",
-        color: "#fff",
-      }}
-    >
-      게임 조회
-    </p>
-    <p
-      style={{
-        position: "absolute",
-        left: 1740,
-        top: -10,
-        fontSize: 45,
-        fontWeight: 600,
-        textAlign: "center",
-        color: "#fff",
-      }}
-    >
-      Menu
-    </p>
-    <p
-      style={{
-        position: "absolute",
-        left: 97,
-        top: -40,
-        fontSize: 60,
-        fontWeight: 600,
-        textAlign: "center",
-        color: "#fff",
-      }}
-    >
-      NEO
-    </p>
-  </div>
+  <Header></Header>
   <div style={{ width: 300, height: 80 }}>
     <div
       style={{
