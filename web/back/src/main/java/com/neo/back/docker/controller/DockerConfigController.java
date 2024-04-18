@@ -22,7 +22,7 @@ public class DockerConfigController {
     private final WebClient dockerWebClient;
 
     public DockerConfigController(WebClient.Builder webClientBuilder) {
-        this.dockerWebClient = webClientBuilder.baseUrl("http://외부ip:2375").
+        this.dockerWebClient = webClientBuilder.baseUrl("http://223.130.154.221:2375").
                             filter(logRequestAndResponse()) // 로깅 필터를 여기에 추가
                 .build();
     }
@@ -45,31 +45,35 @@ public class DockerConfigController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(createContainerRequest))
                 .retrieve()
-                .bodyToMono(String.class);
-                /*.flatMap(createResponse -> {
+                .bodyToMono(String.class)
+                .flatMap(createResponse -> {
                     String containerId = parseContainerId(createResponse);
                     System.out.println(containerId);
 
                     return dockerWebClient.post()
-                            .uri("/containers/" + containerId.substring(0,12) + "/start")
+                            .uri("/containers/" + containerId.substring(0,12) + "/restart")
 
                             .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
                             .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
                             .thenReturn("Container started with ID: " + containerId);
-                });*/ //생성한 뒤 시작하는 코드 아직 미완.
+                }); //생성한 뒤 시작하는 코드 아직 미완.
 
     }
 
     @PostMapping("/api/start-container")
     public Mono<String> StartContainer() {
 
-        String containerId = "7227c52a74c4";
+        String containerId = "0cb70cfdac2e945364482531e57f1fcfd81da84d1b90aa5486e9fd878131f04e";
         return dockerWebClient.post()
-                .uri("/containers/" + containerId.substring(0, 12) + "/start")
-                .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
-                .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요 x
+                .uri(uriBuilder -> uriBuilder.path("/containers/{containerId}/restart")
+                        .queryParam("detachKeys", "ctrl-c") // 예시로 detachKeys를 ctrl-c로 설정
+                        .build(containerId))
+                .retrieve()
+                .bodyToMono(Void.class)
                 .thenReturn("Container started with ID: " + containerId);
+
     }
+
 
 
 
