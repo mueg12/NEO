@@ -22,7 +22,7 @@ public class DockerConfigController {
     private final WebClient dockerWebClient;
 
     public DockerConfigController(WebClient.Builder webClientBuilder) {
-        this.dockerWebClient = webClientBuilder.baseUrl("http://223.130.154.221:2375").
+        this.dockerWebClient = webClientBuilder.baseUrl("http://외부ip:2375").
                             filter(logRequestAndResponse()) // 로깅 필터를 여기에 추가
                 .build();
     }
@@ -71,6 +71,19 @@ public class DockerConfigController {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .thenReturn("Container started with ID: " + containerId);
+
+    }
+
+    @PostMapping("/api/stop-container")
+    public Mono<String> StopContainer() {
+
+        String containerId = "0cb70cfdac2e945364482531e57f1fcfd81da84d1b90aa5486e9fd878131f04e";
+        return dockerWebClient.post()
+                .uri(uriBuilder -> uriBuilder.path("/containers/{containerId}/stop")
+                        .build(containerId))
+                .retrieve()
+                .bodyToMono(Void.class)
+                .thenReturn("Container stoped with ID: " + containerId);
 
     }
 
