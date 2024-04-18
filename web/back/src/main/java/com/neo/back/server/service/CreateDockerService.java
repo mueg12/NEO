@@ -2,6 +2,7 @@ package com.neo.back.server.service;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -14,21 +15,28 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class CreateDockerService {
-    private WebClient webClient;
 
-    public CreateDockerService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://223.130.154.221:2375").filter(logRequestAndResponse()).build();
+    @Autowired
+    private SelectEdgeServerService selectEdgeServerService;
+    private WebClient webClient;
+    private String edgeIp;
+
+    public CreateDockerService(WebClient.Builder webClientBuilder, SelectEdgeServerService selectEdgeServerService) {
+        this.selectEdgeServerService = selectEdgeServerService;
+        this.edgeIp = selectEdgeServerService.selectingEdgeServer();
+        this.webClient = webClientBuilder.baseUrl("http://" + edgeIp + ":2375").filter(logRequestAndResponse()).build();
     }
 
     public Mono<String> createContainer(CreateDockerDTO config) {
 
         // Docker 컨테이너 생성을 위한 JSON 객체 구성
         var createContainerRequest = Map.of(
-            "Image", "mc1.20.4"//,
+            "Image", config.getGame()//,
             // "HostConfig", Map.of(
             // "Memory", 2 * 1024 * 1024 * 1024
-        // )
+            // )
     );
+        //if (edgeIp == null) return Mono.error("edge");//엣지서버 선택 에러
 
         // Docker 컨테이너 생성 요청
         return this.webClient.post()
