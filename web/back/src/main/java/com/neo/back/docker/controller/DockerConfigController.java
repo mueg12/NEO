@@ -1,4 +1,4 @@
-package com.neo.back.server.controller;
+package com.neo.back.docker.controller;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.neo.back.server.dto.CreateDockerDTO;
+import com.neo.back.docker.dto.CreateDockerDTO;
 
 import reactor.core.publisher.Mono;
 

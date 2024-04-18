@@ -1,8 +1,8 @@
-package com.neo.back.server.service;
+package com.neo.back.docker.service;
 
 import com.neo.back.control_edge.service.EdgeServer;
 import com.neo.back.control_edge.service.SSHService;
-import com.neo.back.server.repository.EdgeServerRepository;
+import com.neo.back.docker.repository.EdgeServerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

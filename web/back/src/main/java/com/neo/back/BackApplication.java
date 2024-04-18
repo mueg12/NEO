@@ -1,13 +1,7 @@
 package com.neo.back;
 
-import com.neo.back.server.entity.EdgeServer;
-import com.neo.back.server.repository.EdgeServerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.List;
 // import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication

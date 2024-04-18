@@ -1,4 +1,4 @@
-package com.neo.back.server.service;
+package com.neo.back.docker.service;
 
 import java.util.Map;
 
@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.neo.back.server.dto.CreateDockerDTO;
+import com.neo.back.docker.dto.CreateDockerDTO;
 
 import reactor.core.publisher.Mono;
 

@@ -1,4 +1,4 @@
-package com.neo.back.server.entity;
+package com.neo.back.docker.entity;
 
 public class GameServerSetting {
     

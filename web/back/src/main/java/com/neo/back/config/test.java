@@ -1,7 +1,7 @@
 package com.neo.back.config;
 
-import com.neo.back.server.entity.EdgeServer;
-import com.neo.back.server.repository.EdgeServerRepository;
+import com.neo.back.docker.entity.EdgeServer;
+import com.neo.back.docker.repository.EdgeServerRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

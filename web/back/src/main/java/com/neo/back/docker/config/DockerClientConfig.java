@@ -1,4 +1,4 @@
-package com.neo.back.server.config;
+package com.neo.back.docker.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

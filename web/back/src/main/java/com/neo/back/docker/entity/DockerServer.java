@@ -1,4 +1,4 @@
-package com.neo.back.server.entity;
+package com.neo.back.docker.entity;
 
 import com.neo.back.springjwt.entity.User;
 

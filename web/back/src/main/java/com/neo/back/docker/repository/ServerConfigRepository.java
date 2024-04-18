@@ -1,4 +1,4 @@
-package com.neo.back.server.repository;
+package com.neo.back.docker.repository;
 
 public class ServerConfigRepository {
 }

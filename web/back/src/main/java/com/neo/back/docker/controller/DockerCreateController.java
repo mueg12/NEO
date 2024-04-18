@@ -1,12 +1,12 @@
-package com.neo.back.server.controller;
+package com.neo.back.docker.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import com.neo.back.server.dto.CreateDockerDTO;
-import com.neo.back.server.service.CreateDockerService;
+import com.neo.back.docker.dto.CreateDockerDTO;
+import com.neo.back.docker.service.CreateDockerService;
 
 import reactor.core.publisher.Mono;
 
