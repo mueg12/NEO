@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.neo.back.control_edge.service.EdgeServer;
-import com.neo.back.control_edge.service.SSHService;
+import com.neo.back.control_edge.service.getDataEdgeServer;
 import com.neo.back.control_edge.service.selectEdgeServer;
 import com.neo.back.config.EnvConfig;
 
@@ -28,7 +28,7 @@ public class SSHServiceTest {
     @Test
 	void getEdgeServerData(){
 
-		SSHService sshService = new SSHService();
+		getDataEdgeServer sshService = new getDataEdgeServer();
 		int edgeServer_1 = 0;
 		sshService.getDataOfEdgeServer(hostsTest.get(edgeServer_1), usersTest.get(edgeServer_1), passwordsTest.get(edgeServer_1), IDsTest.get(edgeServer_1));
 
@@ -38,8 +38,8 @@ public class SSHServiceTest {
 	void selectingEdgeServer(){
 
 		selectEdgeServer selectEdgeServer = new selectEdgeServer();
-
-		EdgeServer selecting = selectEdgeServer.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
+		double userMemory = 8000;
+		EdgeServer selecting = selectEdgeServer.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest,userMemory);
 		if(selecting != null){
 			System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
 		}

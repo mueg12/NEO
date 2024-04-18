@@ -4,16 +4,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class selectEdgeServer {
-    public synchronized EdgeServer selectingEdgeServer(List<String> host,List<String> ID,List<String> user,List<String> password){
+    public synchronized EdgeServer selectingEdgeServer(List<String> host,List<String> ID,List<String> user,List<String> password ,double UserMemory){
         int edgeServerNumber = ID.size();
         List<EdgeServer> edgeServers = new ArrayList<>();
         EdgeServer selecteEdgeServer = null; 
-        SSHService makeDatas = new SSHService();
+        getDataEdgeServer makeDatas = new getDataEdgeServer();
 
         int cpuLimit = 10; // 향후 개인 사용자가 사용할 Cpu의 최소 기준 퍼센트
-        int memoryLimit = 2000; // 향후 개인 사용자가 사용할 Memory의 최소 기준 MiB
-        int storageLimit = 3000; // 향후 개인 사용자가 사용할 Storage의 최소 기준 MiB
+        double memoryLimit = UserMemory; // 향후 개인 사용자가 사용할 Memory의 최소 기준 MiB
+        int storageLimit = 3000; 
 
         int edgeServermemoryLeft = 1000; // 엣지 서버의 시스템 메모리 공간 할당
         // 모든 edgeServer에 대한 데이터를 list 형태로 구조화 + 생성하고 남는 램이 edgeServermemoryLeft 이상 남아있어야 한다.

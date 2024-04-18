@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -23,29 +23,23 @@ import java.util.Random;
 
 import java.lang.reflect.Field;
 
-@Configuration
-public class SSHService {
+@Component
+public class getDataEdgeServer {
     
-    private static final Logger logger = LoggerFactory.getLogger(SSHService.class);
+    private static final Logger logger = LoggerFactory.getLogger(getDataEdgeServer.class);
     
     public EdgeServer getDataOfEdgeServer(String host, String user, String password, String ID){
         EdgeServer edgeServer = new EdgeServer(ID); 
         Session session = null;
         String command = "";
         String portCMD = "";
-        ObjectMapper objectMapper = new ObjectMapper();
-        String edgeCmdControlPath = "edgeServer/control_edgeCmd.json";
-        ClassPathResource jsonFile = new ClassPathResource(edgeCmdControlPath);
         try {
-            EdgeServerCmd cmd = objectMapper.readValue(jsonFile.getInputStream(), EdgeServerCmd.class);
+            EdgeServerCmd cmd = getDataFromJson();
             Class<?> clazz = cmd.getClass();
             Field[] fields = clazz.getDeclaredFields();
 
             command = getCMDExceptPort(fields,cmd);
             portCMD = getCMDPort(fields,cmd);
-            // System.out.println(portCMD);
-            // System.out.println("test");
-            // System.out.println(command);
             session = getJsch(host, user, password);
 
             getLinesByCMDExceptPortWithChannel(edgeServer, session, command, fields);
@@ -80,6 +74,13 @@ public class SSHService {
         }
 
         return edgeServer; 
+    }
+    private EdgeServerCmd getDataFromJson() throws IOException, StreamReadException, DatabindException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String edgeCmdControlPath = "edgeServer/control_edgeCmd.json";
+        ClassPathResource jsonFile = new ClassPathResource(edgeCmdControlPath);
+        EdgeServerCmd cmd = objectMapper.readValue(jsonFile.getInputStream(), EdgeServerCmd.class);
+        return cmd;
     }
     // Map으로 관리된 각각의 엣지 서버의 데이터를 실제 EdgeServer 클래스에 넣는 함수
     private void setCpuEdgeServer(EdgeServer ES, Map<String, Double> lines){
