@@ -32,6 +32,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	compileOnly 'org.json:json:20201115'
+	implementation 'org.apache.commons:commons-compress:1.20'
 // OAuth2 클라이언트 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	compileOnly 'org.projectlombok:lombok'
