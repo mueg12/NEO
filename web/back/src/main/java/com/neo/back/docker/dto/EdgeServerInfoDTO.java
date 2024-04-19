@@ -9,14 +9,17 @@ import lombok.Setter;
 @Setter
 public class EdgeServerInfoDTO {
     private String EdgeServerID;
-    private double cpuUse;
-    private double cpuIdle;
     private double memoryUse;
     private double memoryIdle;
-    private double storageUse;
-    private double storageIdle;
     private List<String> portUses;
     private int portSelect;
+    private String iP;
+
+    private double cpuUse;
+    private double cpuIdle;
+    private double storageUse;
+    private double storageIdle;
+
 
     public EdgeServerInfoDTO(String EdgeServerID){
         this.EdgeServerID = EdgeServerID;

@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+
 
 @Service
 // @Transactional
@@ -32,27 +36,16 @@ public class SelectEdgeServerService {
 		List<EdgeServerEntity> allEdgeServers = edgeServerInfoTEST.findAll();
 		List<EdgeServerInfoDTO> edgedgeServerDTO =  new ArrayList<>();;
 		EdgeServerInfoDTO selecteEdgeServer = null;
-        double memoryLimit = UserMemory; // 향후 개인 사용자가 사용할 Memory의 최소 기준 MiB
 
-        int edgeServermemoryLeft = 1000; // 엣지 서버의 시스템 메모리 공간 할당
+        double edgeServermemoryLeft = 1; // 엣지 서버의 시스템 메모리 공간 할당
 
 		for(EdgeServerEntity edgeServer : allEdgeServers){
 			EdgeServerInfoDTO edgeServerInfoDTO = getEdgeServerService.changeEdgeServerEntityTODTO(edgeServer);
-			// if()
-
+			double canUseMemory = edgeServerInfoDTO.getMemoryIdle() - UserMemory - edgeServermemoryLeft;
+			if(0 <= canUseMemory){
+				edgedgeServerDTO.add(edgeServerInfoDTO);
+			}
 		}
-        // for(int Index = 0 ; Index < edgeServerNumber ; Index++){
-        //     String hostIndex = host.get(Index);
-        //     String IDIndex = ID.get(Index);
-        //     String userIndex = user.get(Index);
-        //     String passwordIndex = password.get(Index);
-        //     System.out.println(Index);
-        //     EdgeServer tmp = makeDatas.getDataOfEdgeServer(hostIndex,userIndex,passwordIndex,IDIndex);
-        //     if( cpuLimit < tmp.getCpuIdle() && storageLimit < tmp.getStorageIdle() && memoryLimit < tmp.getMemoryIdle()){
-        //         edgeServers.add(tmp);
-        //     }
-        // }
-
         /*
          * 모든 edgeServer에 대한 데이터를 기반으로 선정 알고리즘 실행
          * 
@@ -63,15 +56,13 @@ public class SelectEdgeServerService {
          * 서버를 개설시키도록 한다.
          * 만약 기준을 만족하는게 없다면, NULL값을 리턴한다. 
          */
-        // Collections.sort(edgeServers, Comparator.comparingDouble(EdgeServer::getMemoryIdle));
-        // for(EdgeServer edgeServer : edgeServers){
-        //     // edgeServers의 내부 엣지서버 데이터들이 오름차순인지 확인
-        //     // System.out.println(edgeServer.getMemoryIdle());
-        //     if(edgeServermemoryLeft < edgeServer.getMemoryIdle() - memoryLimit){
-        //         selecteEdgeServer = edgeServer;
-        //         return selecteEdgeServer;
-        //     }
-        // }
+        Collections.sort(edgedgeServerDTO, Comparator.comparingDouble(EdgeServerInfoDTO::getMemoryIdle));
+
+        for(EdgeServerInfoDTO edgeServer : edgedgeServerDTO){
+			selecteEdgeServer = edgeServer;
+			return selecteEdgeServer;
+        }
+		
         return selecteEdgeServer;
     }
 

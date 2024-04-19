@@ -22,9 +22,7 @@ public class GetEdgeServerService {
 
     public EdgeServerInfoDTO changeEdgeServerEntityTODTO(EdgeServerEntity edgeServer) {
         EdgeServerInfoDTO edgedgeServerDTO = new EdgeServerInfoDTO(edgeServer.getEdgeServerName());
-        edgedgeServerDTO.setMemoryUse(edgeServer.getMemoryUse());
         double memoryIdle = edgeServer.getMemoryTotal() - edgeServer.getMemoryUse();
-        edgedgeServerDTO.setMemoryIdle(memoryIdle);
         Session session = null;
         String portCMD = "";
         try {
@@ -38,6 +36,9 @@ public class GetEdgeServerService {
 
             sshService.getLinesByCMDPortWithChannel(edgedgeServerDTO, session, portCMD, fields);
             sshService.selectPort(edgedgeServerDTO);
+            edgedgeServerDTO.setMemoryUse(edgeServer.getMemoryUse());
+            edgedgeServerDTO.setMemoryIdle(memoryIdle);
+            edgedgeServerDTO.setIP(edgeServer.getIp());
 
         } catch (JSchException | java.io.IOException e) {
             e.printStackTrace();

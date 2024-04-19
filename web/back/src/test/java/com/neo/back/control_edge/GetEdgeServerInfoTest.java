@@ -53,13 +53,19 @@ public class GetEdgeServerInfoTest {
 			System.out.println(edgedgeServerDTO.getEdgeServerID());
 			System.out.println(edgedgeServerDTO.getMemoryIdle());
 			System.out.println(edgedgeServerDTO.getMemoryUse());
+			System.out.println(edgedgeServerDTO.getIP());
 		}
 
 	}
 
 	@Test
 	public void selectEdgeServerByDatabase(){
-
+		EdgeServerInfoDTO selectServer = selectEdgeServer.selectingEdgeServer(8);
+		System.out.println(selectServer.getEdgeServerID());
+		System.out.println(selectServer.getMemoryUse());
+		System.out.println(selectServer.getMemoryIdle());
+		System.out.println(selectServer.getPortSelect());
+		System.out.println(selectServer.getIP());
 	}
 	
 }
