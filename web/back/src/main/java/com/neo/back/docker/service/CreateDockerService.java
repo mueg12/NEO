@@ -22,7 +22,7 @@ public class CreateDockerService {
 
     public CreateDockerService(WebClient.Builder webClientBuilder, SelectEdgeServerService selectEdgeServerService) {
         this.selectEdgeServerService = selectEdgeServerService;
-        this.edgeIp = selectEdgeServerService.selectingEdgeServer();
+        // this.edgeIp = selectEdgeServerService.selectingEdgeServer();
         this.dockerWebClient = webClientBuilder.baseUrl("http://" + edgeIp + ":2375").build();
     }
 

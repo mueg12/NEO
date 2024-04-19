@@ -13,43 +13,44 @@ import java.lang.reflect.Field;
 @Service
 public class GetEdgeServerService {
 
-    // private final SshService sshService;
+    private final SshService sshService;
 
-    // @Autowired
-    // public GetEdgeServerService(SshService sshService) {
-    //     this.sshService = sshService;
-    // }
+    @Autowired
+    public GetEdgeServerService(SshService sshService) {
+        this.sshService = sshService;
+    }
 
     public EdgeServerInfoDTO changeEdgeServerEntityTODTO(EdgeServerEntity edgeServer) {
         EdgeServerInfoDTO edgedgeServerDTO = new EdgeServerInfoDTO(edgeServer.getEdgeServerName());
-    //     Session session = null;
-    //     String portCMD = "";
-    //     try {
+        edgedgeServerDTO.setMemoryUse(edgeServer.getMemoryUse());
+        double memoryIdle = edgeServer.getMemoryTotal() - edgeServer.getMemoryUse();
+        edgedgeServerDTO.setMemoryIdle(memoryIdle);
+        Session session = null;
+        String portCMD = "";
+        try {
             
-    //         EdgeServerCmdDTO cmd = sshService.getDataFromJson();
-    //         Class<?> clazz = cmd.getClass();
-    //         Field[] fields = clazz.getDeclaredFields();
+            EdgeServerCmdDTO cmd = sshService.getDataFromJson();
+            Class<?> clazz = cmd.getClass();
+            Field[] fields = clazz.getDeclaredFields();
 
-    //         portCMD = sshService.getCMDPort(fields,cmd);
-    //         session = sshService.getJsch(edgeServer.getIp(), edgeServer.getUser(), edgeServer.getPassWord());
+            portCMD = sshService.getCMDPort(fields,cmd);
+            session = sshService.getJsch(edgeServer.getIp(), edgeServer.getUser(), edgeServer.getPassWord());
 
-    //         System.out.println(portCMD);
+            sshService.getLinesByCMDPortWithChannel(edgedgeServerDTO, session, portCMD, fields);
+            sshService.selectPort(edgedgeServerDTO);
 
-    //         sshService.getLinesByCMDPortWithChannel(edgedgeServerDTO, session, portCMD, fields);
-    //         sshService.selectPort(edgedgeServerDTO);
-    //         System.out.println(edgedgeServerDTO.getPortSelect());
-    //     } catch (JSchException | java.io.IOException e) {
-    //         e.printStackTrace();
-    //     } catch(IllegalAccessException e){
-    //         e.printStackTrace();
-    //     } catch(NumberFormatException  e){
-    //         e.printStackTrace();
-    //     }
-    //     finally {
-    //         if (session != null && session.isConnected()) {
-    //             session.disconnect();
-    //         }
-    //     }
+        } catch (JSchException | java.io.IOException e) {
+            e.printStackTrace();
+        } catch(IllegalAccessException e){
+            e.printStackTrace();
+        } catch(NumberFormatException  e){
+            e.printStackTrace();
+        }
+        finally {
+            if (session != null && session.isConnected()) {
+                session.disconnect();
+            }
+        }
         return edgedgeServerDTO;
     }
 

@@ -17,4 +17,6 @@ public class EdgeServerEntity {
     private String ip;
     private String user;
     private String passWord;
+    private double memoryTotal;
+    private double memoryUse;
 }

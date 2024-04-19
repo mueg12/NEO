@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Service
 public class SshService {
 
     EdgeServerCmdDTO getDataFromJson() throws IOException, StreamReadException, DatabindException {

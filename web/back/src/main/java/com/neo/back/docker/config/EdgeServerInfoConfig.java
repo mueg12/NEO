@@ -18,6 +18,8 @@ public class EdgeServerInfoConfig {
     @Value("#{'${edgeservers.ip}'.split(',')}")private List<String> edgeServerIp;
 	@Value("#{'${edgeservers.user.id}'.split(',')}")private List<String> edgeServerUser;
 	@Value("#{'${edgeservers.password}'.split(',')}")private List<String> edgeServerPassword;
+	@Value("#{'${edgeservers.memoryTotal}'.split(',')}")private List<String> edgeServerMemoryTotal;
+	@Value("#{'${edgeservers.memoryUse}'.split(',')}")private List<String> edgeServerMemoryUse;
 
     @Autowired
     EdgeServerRepository edgeServerInfo;
@@ -31,6 +33,8 @@ public class EdgeServerInfoConfig {
             edgeServer.setIp(edgeServerIp.get(index));
             edgeServer.setUser(edgeServerUser.get(index));
             edgeServer.setPassWord(edgeServerPassword.get(index));
+            edgeServer.setMemoryTotal(Double.parseDouble(edgeServerMemoryTotal.get(index)));
+            edgeServer.setMemoryUse(Double.parseDouble(edgeServerMemoryUse.get(index)));
             edgeServerInfo.save(edgeServer);
         }
 	}
