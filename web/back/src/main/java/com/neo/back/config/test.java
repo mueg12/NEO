@@ -1,37 +1,37 @@
-package com.neo.back.config;
+// package com.neo.back.config;
 
-import com.neo.back.docker.entity.EdgeServer;
-import com.neo.back.docker.repository.EdgeServerRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+// import com.neo.back.docker.entity.EdgeServerEntity;
+// import com.neo.back.docker.repository.EdgeServerRepository;
+// import jakarta.annotation.PostConstruct;
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+// import java.util.List;
 
-@Configuration
-public class test {
-	private final EdgeServerRepository edgeServerRepository;
+// @Configuration
+// public class test {
+// 	private final EdgeServerRepository edgeServerRepository;
 
-	@Value("#{'${edgeservers.ip}'.split(',')}")
-	private List<String> hostsTest;
+// 	@Value("#{'${edgeservers.ip}'.split(',')}")
+// 	private List<String> hostsTest;
 
-	@Value("#{'${edgeservers.id}'.split(',')}")
-	private List<String> IDsTest;
+// 	@Value("#{'${edgeservers.id}'.split(',')}")
+// 	private List<String> IDsTest;
 
-	public test(EdgeServerRepository edgeServerRepository) {
-		this.edgeServerRepository = edgeServerRepository;
-	}
+// 	public test(EdgeServerRepository edgeServerRepository) {
+// 		this.edgeServerRepository = edgeServerRepository;
+// 	}
 
-	@PostConstruct
-	private void init() {
-		EdgeServer edgeServer = new EdgeServer();
-		edgeServer.setEdgeServerName(IDsTest.get(0));
-		edgeServer.setIp(hostsTest.get(0));
-		edgeServerRepository.save(edgeServer);
-		edgeServer.setEdgeServerName(IDsTest.get(1));
-		edgeServer.setIp(hostsTest.get(1));
-		edgeServerRepository.save(edgeServer);
-	}
+// 	// @PostConstruct
+// 	// private void init() {
+// 	// 	EdgeServerEntity edgeServer = new EdgeServerEntity();
+// 	// 	edgeServer.setEdgeServerName(IDsTest.get(0));
+// 	// 	edgeServer.setIp(hostsTest.get(0));
+// 	// 	edgeServerRepository.save(edgeServer);
+// 	// 	edgeServer.setEdgeServerName(IDsTest.get(1));
+// 	// 	edgeServer.setIp(hostsTest.get(1));
+// 	// 	edgeServerRepository.save(edgeServer);
+// 	// }
 
 
-}
+// }
