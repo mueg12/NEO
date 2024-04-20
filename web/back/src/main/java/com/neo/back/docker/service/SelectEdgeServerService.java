@@ -1,14 +1,11 @@
 package com.neo.back.docker.service;
 
 
-import com.neo.back.docker.dto.EdgeServerInfoDTO;
-import com.neo.back.docker.entity.EdgeServerEntity;
-//import com.neo.back.control_edge.service.EdgeServer;
+import com.neo.back.docker.dto.EdgeServerInfoDto;
+import com.neo.back.docker.entity.EdgeServer;
 import com.neo.back.docker.repository.EdgeServerRepository;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,49 +16,25 @@ import java.util.Comparator;
 
 
 @Service
-// @Transactional
-// @RequiredArgsConstructor
 public class SelectEdgeServerService {
 
-	private final EdgeServerRepository edgeServerInfoTEST;
+	private final EdgeServerRepository edgeServerRepo;
 	private final GetEdgeServerService getEdgeServerService;
 
-	@Autowired
-	public SelectEdgeServerService(EdgeServerRepository edgeServerInfoTEST,GetEdgeServerService getEdgeServerService){
-		this.edgeServerInfoTEST = edgeServerInfoTEST;
+	public SelectEdgeServerService(EdgeServerRepository edgeServerRepo,GetEdgeServerService getEdgeServerService){
+		this.edgeServerRepo = edgeServerRepo;
 		this.getEdgeServerService = getEdgeServerService;
 	}
 	
-	@Value("#{'${edgeservers.ip}'.split(',')}")private List<String> hostsTest;
-	@Value("#{'${edgeservers.id}'.split(',')}")private List<String> IDsTest;
-	@Value("#{'${edgeservers.user.id}'.split(',')}")private List<String> usersTest;
-	@Value("#{'${edgeservers.password}'.split(',')}")private List<String> passwordsTest;
+	public synchronized EdgeServerInfoDto selectingEdgeServer(int UserMemory){
+		List<EdgeServer> allEdgeServers = edgeServerRepo.findAll();
+		List<EdgeServerInfoDto> edgedgeServerDTO =  new ArrayList<>();;
+		EdgeServerInfoDto selecteEdgeServer = null;
 
-    public String selectingEdgeServer(){
+        int edgeServermemoryLeft = 1; // 엣지 서버의 시스템 메모리 공간 할당
 
-		// selectingEdgeServer sshService = new SSHService();
-
-		// EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
-		// if(selecting != null){
-		// 	System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
-		// 	return edgeRepo.findByEdgeServerName(selecting.getEdgeServerID()).getIp();
-		// }
-		// else{
-		// 	System.out.println("selectingEdgeServer of NULL");
-		// 	return null;
-		// }
-
-		return "223.130.154.221";
-	}
-	public synchronized EdgeServerInfoDTO selectingEdgeServer(double UserMemory){
-		List<EdgeServerEntity> allEdgeServers = edgeServerInfoTEST.findAll();
-		List<EdgeServerInfoDTO> edgedgeServerDTO =  new ArrayList<>();;
-		EdgeServerInfoDTO selecteEdgeServer = null;
-
-        double edgeServermemoryLeft = 1; // 엣지 서버의 시스템 메모리 공간 할당
-
-		for(EdgeServerEntity edgeServer : allEdgeServers){
-			EdgeServerInfoDTO edgeServerInfoDTO = getEdgeServerService.changeEdgeServerEntityTODTO(edgeServer);
+		for(EdgeServer edgeServer : allEdgeServers){
+			EdgeServerInfoDto edgeServerInfoDTO = getEdgeServerService.changeEdgeServerEntityTODTO(edgeServer);
 			double canUseMemory = edgeServerInfoDTO.getMemoryIdle() - UserMemory - edgeServermemoryLeft;
 			if(0 <= canUseMemory){
 				edgedgeServerDTO.add(edgeServerInfoDTO);
@@ -77,9 +50,9 @@ public class SelectEdgeServerService {
          * 서버를 개설시키도록 한다.
          * 만약 기준을 만족하는게 없다면, NULL값을 리턴한다. 
          */
-        Collections.sort(edgedgeServerDTO, Comparator.comparingDouble(EdgeServerInfoDTO::getMemoryIdle));
+        Collections.sort(edgedgeServerDTO, Comparator.comparingDouble(EdgeServerInfoDto::getMemoryIdle));
 
-        for(EdgeServerInfoDTO edgeServer : edgedgeServerDTO){
+        for(EdgeServerInfoDto edgeServer : edgedgeServerDTO){
 			selecteEdgeServer = edgeServer;
 			return selecteEdgeServer;
         }

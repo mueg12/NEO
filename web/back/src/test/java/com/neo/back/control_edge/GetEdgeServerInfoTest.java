@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.neo.back.docker.dto.EdgeServerInfoDTO;
-import com.neo.back.docker.entity.EdgeServerEntity;
+import com.neo.back.docker.dto.EdgeServerInfoDto;
+import com.neo.back.docker.entity.EdgeServer;
 import com.neo.back.docker.repository.EdgeServerRepository;
 import com.neo.back.docker.service.GetEdgeServerService;
 import com.neo.back.docker.service.SelectEdgeServerService;
@@ -29,9 +29,9 @@ public class GetEdgeServerInfoTest {
 
 	@Test
 	public void getEdgeServerInfoFromDatabase(){
-		List<EdgeServerEntity> allEdgeServers = edgeServerInfoTEST.findAll();
+		List<EdgeServer> allEdgeServers = edgeServerInfoTEST.findAll();
 		int index = 0;
-		for(EdgeServerEntity edgeServer : allEdgeServers){
+		for(EdgeServer edgeServer : allEdgeServers){
 			System.out.println("EdgeServer Datas of Number " + index++);
 			System.out.println(edgeServer.getEdgeServerName());
 			System.out.println(edgeServer.getUser());
@@ -45,10 +45,10 @@ public class GetEdgeServerInfoTest {
 
 	@Test
 	public void getEdgeServerByDatabase(){
-		List<EdgeServerEntity> allEdgeServers = edgeServerInfoTEST.findAll();
-		EdgeServerInfoDTO edgedgeServerDTO = new EdgeServerInfoDTO("test");
+		List<EdgeServer> allEdgeServers = edgeServerInfoTEST.findAll();
+		EdgeServerInfoDto edgedgeServerDTO = new EdgeServerInfoDto("test");
 
-		for(EdgeServerEntity edgeServer : allEdgeServers){
+		for(EdgeServer edgeServer : allEdgeServers){
 			edgedgeServerDTO = getEdgeServer.changeEdgeServerEntityTODTO(edgeServer);
 			System.out.println(edgedgeServerDTO.getEdgeServerID());
 			System.out.println(edgedgeServerDTO.getMemoryIdle());
@@ -60,7 +60,7 @@ public class GetEdgeServerInfoTest {
 
 	@Test
 	public void selectEdgeServerByDatabase(){
-		EdgeServerInfoDTO selectServer = selectEdgeServer.selectingEdgeServer(8);
+		EdgeServerInfoDto selectServer = selectEdgeServer.selectingEdgeServer(8);
 		System.out.println(selectServer.getEdgeServerID());
 		System.out.println(selectServer.getMemoryUse());
 		System.out.println(selectServer.getMemoryIdle());

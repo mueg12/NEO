@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EdgeServerCmdDTO {
+public class EdgeServerCmdDto {
     private String cpu;
     private String memoryTotal;
     private String memoryFree;

@@ -7,10 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EdgeServerInfoDTO {
-    private String EdgeServerID;
-    private double memoryUse;
-    private double memoryIdle;
+public class EdgeServerInfoDto {
+    private String edgeServerID;
+    private int memoryUse;
+    private int memoryIdle;
     private List<String> portUses;
     private int portSelect;
     private String iP;
@@ -21,8 +21,8 @@ public class EdgeServerInfoDTO {
     private double storageIdle;
 
 
-    public EdgeServerInfoDTO(String EdgeServerID){
-        this.EdgeServerID = EdgeServerID;
+    public EdgeServerInfoDto(String edgeServerID){
+        this.edgeServerID = edgeServerID;
     }
 
     public double getMemoryUsePercent() {

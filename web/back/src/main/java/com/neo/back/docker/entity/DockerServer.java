@@ -36,6 +36,8 @@ public class DockerServer {
     @JoinColumn(name = "game_game")
     private Game game;
 
-    //private GameServerSetting setting;
+    @OneToOne
+    @JoinColumn
+    private GameServerSetting setting;
 
 }

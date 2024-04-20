@@ -9,9 +9,11 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.neo.back.docker.dto.CreateDockerDto;
+import com.neo.back.docker.dto.EdgeServerInfoDto;
 import com.neo.back.docker.entity.DockerServer;
 import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
+import com.neo.back.docker.repository.GameRepository;
 
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
@@ -21,23 +23,25 @@ import reactor.core.publisher.Mono;
 public class CreateDockerService {
     private final DockerServerRepository dockerRepo;
     private final EdgeServerRepository edgeRepo;
+    private final GameRepository gameRepo;
     private final SelectEdgeServerService selectEdgeServerService;
     private WebClient dockerWebClient;
     private final WebClient.Builder webClientBuilder;
-    private String edgeIp;
+    private EdgeServerInfoDto edgeServer;
     private String containerId;
 
-    public CreateDockerService(WebClient.Builder webClientBuilder, SelectEdgeServerService selectEdgeServerService, DockerServerRepository dockerRepo, EdgeServerRepository edgeRepo) {
+    public CreateDockerService(WebClient.Builder webClientBuilder, SelectEdgeServerService selectEdgeServerService, DockerServerRepository dockerRepo, EdgeServerRepository edgeRepo, GameRepository gameRepo) {
         this.dockerRepo = dockerRepo;
         this.edgeRepo = edgeRepo;
+        this.gameRepo = gameRepo;
         this.selectEdgeServerService = selectEdgeServerService;
         this.webClientBuilder = webClientBuilder;
     }
 
     public Mono<String> createContainer(CreateDockerDto config) {
 
-        this.edgeIp = this.selectEdgeServerService.selectingEdgeServer();
-        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + edgeIp + ":2375").filter(logRequestAndResponse()).build();
+        this.edgeServer = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
+        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + this.edgeServer.getIP()+ ":2375").filter(logRequestAndResponse()).build();
 
         // Docker 컨테이너 생성을 위한 JSON 객체 구성
         var createContainerRequest = Map.of(
@@ -47,18 +51,22 @@ public class CreateDockerService {
             )
         );
 
-        Mono<String> response = createContainerRequest(createContainerRequest);
+        return createContainerRequest(createContainerRequest)
+            .flatMap(response -> Mono.fromCallable(() -> {
 
-        DockerServer dockerServer = new DockerServer();
-        // dockerServer.setUser(null);
-        dockerServer.setEdgeServer(edgeRepo.findByIp(edgeIp));
-        // dockerServer.setPort(1234);
-        dockerServer.setDockerId(this.containerId);
-        dockerServer.setRAMCapacity(config.getRamCapacity());
-        // dockerServer.setGame(null);
-        dockerRepo.save(dockerServer);
-        
-        return response;
+                DockerServer dockerServer = new DockerServer();
+                // dockerServer.setUser(null);
+                dockerServer.setEdgeServer(edgeRepo.findByIp(this.edgeServer.getIP()));
+                dockerServer.setPort(this.edgeServer.getPortSelect());
+                dockerServer.setDockerId(this.containerId);
+                dockerServer.setRAMCapacity(config.getRamCapacity());
+                dockerServer.setGame(gameRepo.findByGame(config.getGame()));
+                dockerServer.setSetting(gameRepo.findByGame(config.getGame()).getDefaultSetting());
+                dockerRepo.save(dockerServer);
+
+                return response;
+            }));
+    
     }
 
 

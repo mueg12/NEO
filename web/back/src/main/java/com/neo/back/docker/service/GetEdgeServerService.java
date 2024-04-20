@@ -1,13 +1,12 @@
 package com.neo.back.docker.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.neo.back.docker.dto.EdgeServerCmdDTO;
-import com.neo.back.docker.dto.EdgeServerInfoDTO;
-import com.neo.back.docker.entity.EdgeServerEntity;
+import com.neo.back.docker.dto.EdgeServerCmdDto;
+import com.neo.back.docker.dto.EdgeServerInfoDto;
+import com.neo.back.docker.entity.EdgeServer;
 import java.lang.reflect.Field;
 
 @Service
@@ -15,19 +14,18 @@ public class GetEdgeServerService {
 
     private final SshService sshService;
 
-    @Autowired
     public GetEdgeServerService(SshService sshService) {
         this.sshService = sshService;
     }
 
-    public EdgeServerInfoDTO changeEdgeServerEntityTODTO(EdgeServerEntity edgeServer) {
-        EdgeServerInfoDTO edgedgeServerDTO = new EdgeServerInfoDTO(edgeServer.getEdgeServerName());
-        double memoryIdle = edgeServer.getMemoryTotal() - edgeServer.getMemoryUse();
+    public EdgeServerInfoDto changeEdgeServerEntityTODTO(EdgeServer edgeServer) {
+        EdgeServerInfoDto edgedgeServerDTO = new EdgeServerInfoDto(edgeServer.getEdgeServerName());
+        int memoryIdle = edgeServer.getMemoryTotal() - edgeServer.getMemoryUse();
         Session session = null;
         String portCMD = "";
         try {
             
-            EdgeServerCmdDTO cmd = sshService.getDataFromJson();
+            EdgeServerCmdDto cmd = sshService.getDataFromJson();
             Class<?> clazz = cmd.getClass();
             Field[] fields = clazz.getDeclaredFields();
 

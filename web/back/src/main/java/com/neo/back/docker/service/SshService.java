@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.neo.back.docker.dto.EdgeServerCmdDTO;
-import com.neo.back.docker.dto.EdgeServerInfoDTO;
+import com.neo.back.docker.dto.EdgeServerCmdDto;
+import com.neo.back.docker.dto.EdgeServerInfoDto;
 import com.jcraft.jsch.*;
 
 import java.lang.reflect.Field;
@@ -23,15 +23,15 @@ import java.util.Random;
 @Service
 public class SshService {
 
-    EdgeServerCmdDTO getDataFromJson() throws IOException, StreamReadException, DatabindException {
+    EdgeServerCmdDto getDataFromJson() throws IOException, StreamReadException, DatabindException {
         ObjectMapper objectMapper = new ObjectMapper();
         String edgeCmdControlPath = "edgeServer/control_edgeCmd.json";
         ClassPathResource jsonFile = new ClassPathResource(edgeCmdControlPath);
-        EdgeServerCmdDTO cmd = objectMapper.readValue(jsonFile.getInputStream(), EdgeServerCmdDTO.class);
+        EdgeServerCmdDto cmd = objectMapper.readValue(jsonFile.getInputStream(), EdgeServerCmdDto.class);
         return cmd;
     }
     
-    String getCMDPort(Field[] fields_tmp, EdgeServerCmdDTO cmd_tmp) throws IllegalArgumentException, IllegalAccessException, StreamReadException, DatabindException, IOException{
+    String getCMDPort(Field[] fields_tmp, EdgeServerCmdDto cmd_tmp) throws IllegalArgumentException, IllegalAccessException, StreamReadException, DatabindException, IOException{
         fields_tmp[5].setAccessible(true);
         String portCMD = (String)fields_tmp[5].get(cmd_tmp);
         return portCMD;
@@ -47,7 +47,7 @@ public class SshService {
         return session;
     }
 
-    void getLinesByCMDPortWithChannel(EdgeServerInfoDTO edgeServer, Session session, String command, Field[] fields) 
+    void getLinesByCMDPortWithChannel(EdgeServerInfoDto edgeServer, Session session, String command, Field[] fields) 
                                 throws JSchException, IOException {
         Channel channel = session.openChannel("exec");
         ((ChannelExec) channel).setCommand(command);
@@ -61,14 +61,14 @@ public class SshService {
         reader.close();
         channel.disconnect();
     }
-    void setPortEdgeServer(EdgeServerInfoDTO edgeServer, BufferedReader reader, List<String> lines) throws IOException {
+    void setPortEdgeServer(EdgeServerInfoDto edgeServer, BufferedReader reader, List<String> lines) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
             lines.add(line);
         }
         edgeServer.setPortUses(lines);
     }
-    void selectPort(EdgeServerInfoDTO edgeServer) {
+    void selectPort(EdgeServerInfoDto edgeServer) {
         List<Integer> integerList = convertStringListToIntList(edgeServer.getPortUses());
         int minRange = 0;
         int maxRange = 25565;

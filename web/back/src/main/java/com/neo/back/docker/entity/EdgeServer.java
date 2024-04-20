@@ -3,15 +3,13 @@ package com.neo.back.docker.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Setter
 @Getter
-@Table(name="edgeServer")
-public class EdgeServerEntity {
+public class EdgeServer {
     @Id
     private String edgeServerName;
     
@@ -19,6 +17,6 @@ public class EdgeServerEntity {
     private String ip;
     private String user;
     private String passWord;
-    private double memoryTotal;
-    private double memoryUse;
+    private int memoryTotal;
+    private int memoryUse;
 }
