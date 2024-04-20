@@ -54,6 +54,9 @@ public class SelectEdgeServerService {
 
         for(EdgeServerInfoDto edgeServer : edgedgeServerDTO){
 			selecteEdgeServer = edgeServer;
+			EdgeServer edgeserver = edgeServerRepo.findByEdgeServerName(selecteEdgeServer.getEdgeServerID());
+			edgeserver.setMemoryUse(selecteEdgeServer.getMemoryUse() + UserMemory);
+			edgeServerRepo.save(edgeserver);
 			return selecteEdgeServer;
         }
 		
