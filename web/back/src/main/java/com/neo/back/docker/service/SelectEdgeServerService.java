@@ -1,7 +1,6 @@
 package com.neo.back.docker.service;
 
-import com.neo.back.control_edge.service.EdgeServer;
-import com.neo.back.control_edge.service.SSHService;
+//import com.neo.back.control_edge.service.EdgeServer;
 import com.neo.back.docker.repository.EdgeServerRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +23,18 @@ public class SelectEdgeServerService {
 
     public String selectingEdgeServer(){
 
-		selectingEdgeServer sshService = new SSHService();
+		// selectingEdgeServer sshService = new SSHService();
 
-		EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
-		if(selecting != null){
-			System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
-			return edgeRepo.findByEdgeServerName(selecting.getEdgeServerID()).getIp();
-		}
-		else{
-			System.out.println("selectingEdgeServer of NULL");
-			return null;
-		}
+		// EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
+		// if(selecting != null){
+		// 	System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
+		// 	return edgeRepo.findByEdgeServerName(selecting.getEdgeServerID()).getIp();
+		// }
+		// else{
+		// 	System.out.println("selectingEdgeServer of NULL");
+		// 	return null;
+		// }
+
+		return "223.130.154.221";
 	}
 }
