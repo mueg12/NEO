@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EdgeServerRepository extends JpaRepository<EdgeServerEntity, String> {
     EdgeServerEntity findByEdgeServerName(String EdgeServerName);
-    EdgeServerEntity save(EdgeServerEntity edgeServer);
     List<EdgeServerEntity> findAll();
-    
+    EdgeServerEntity findByIp(String ip);
 }

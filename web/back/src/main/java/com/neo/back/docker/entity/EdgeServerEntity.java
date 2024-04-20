@@ -1,5 +1,6 @@
 package com.neo.back.docker.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -13,7 +14,8 @@ import lombok.Setter;
 public class EdgeServerEntity {
     @Id
     private String edgeServerName;
-
+    
+    @Column(unique = true)
     private String ip;
     private String user;
     private String passWord;

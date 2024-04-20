@@ -1,12 +1,11 @@
 package com.neo.back.docker.service;
 
-import com.neo.back.control_edge.service.EdgeServer;
-import com.neo.back.control_edge.service.selectEdgeServer;
+
 import com.neo.back.docker.dto.EdgeServerInfoDTO;
 import com.neo.back.docker.entity.EdgeServerEntity;
+//import com.neo.back.control_edge.service.EdgeServer;
 import com.neo.back.docker.repository.EdgeServerRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +30,28 @@ public class SelectEdgeServerService {
 	public SelectEdgeServerService(EdgeServerRepository edgeServerInfoTEST,GetEdgeServerService getEdgeServerService){
 		this.edgeServerInfoTEST = edgeServerInfoTEST;
 		this.getEdgeServerService = getEdgeServerService;
+	}
+	
+	@Value("#{'${edgeservers.ip}'.split(',')}")private List<String> hostsTest;
+	@Value("#{'${edgeservers.id}'.split(',')}")private List<String> IDsTest;
+	@Value("#{'${edgeservers.user.id}'.split(',')}")private List<String> usersTest;
+	@Value("#{'${edgeservers.password}'.split(',')}")private List<String> passwordsTest;
+
+    public String selectingEdgeServer(){
+
+		// selectingEdgeServer sshService = new SSHService();
+
+		// EdgeServer selecting = sshService.selectingEdgeServer(hostsTest,IDsTest,usersTest,passwordsTest);
+		// if(selecting != null){
+		// 	System.out.println("selectingEdgeServer of "+selecting.getEdgeServerID());
+		// 	return edgeRepo.findByEdgeServerName(selecting.getEdgeServerID()).getIp();
+		// }
+		// else{
+		// 	System.out.println("selectingEdgeServer of NULL");
+		// 	return null;
+		// }
+
+		return "223.130.154.221";
 	}
 	public synchronized EdgeServerInfoDTO selectingEdgeServer(double UserMemory){
 		List<EdgeServerEntity> allEdgeServers = edgeServerInfoTEST.findAll();

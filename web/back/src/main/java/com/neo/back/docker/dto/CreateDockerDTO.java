@@ -5,11 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateDockerDTO {
+public class CreateDockerDto {
 
     private String game;
 
-    private String ramCapacity;
+    private int ramCapacity;
 
     private String paymentSystem;
 
