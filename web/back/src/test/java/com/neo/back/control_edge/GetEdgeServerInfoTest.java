@@ -64,7 +64,6 @@ public class GetEdgeServerInfoTest {
 		System.out.println(selectServer.getEdgeServerID());
 		System.out.println(selectServer.getMemoryUse());
 		System.out.println(selectServer.getMemoryIdle());
-		// 이은구가 사용해야할 때 부분
 		System.out.println(selectServer.getPortSelect());
 		System.out.println(selectServer.getIP());
 	}

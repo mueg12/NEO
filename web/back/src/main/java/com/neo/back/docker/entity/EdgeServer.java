@@ -15,6 +15,8 @@ public class EdgeServer {
     
     @Column(unique = true)
     private String ip;
+    private String internalIp;
+    private String domainName;
     private String user;
     private String passWord;
     private int memoryTotal;

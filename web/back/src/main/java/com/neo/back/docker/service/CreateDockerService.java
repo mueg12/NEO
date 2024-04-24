@@ -1,6 +1,7 @@
 package com.neo.back.docker.service;
 
 import java.util.Map;
+import java.util.Collections;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -46,8 +47,16 @@ public class CreateDockerService {
         // Docker 컨테이너 생성을 위한 JSON 객체 구성
         var createContainerRequest = Map.of(
             "Image", config.getGame(),
+            "ExposedPorts", Map.of(
+                "25565/tcp", Map.of()
+            ),
             "HostConfig", Map.of(
-            "Memory", config.getRamCapacity() * 1024 * 1024 * 1024
+                "PortBindings", Map.of(
+                    "25565/tcp", Collections.singletonList(
+                        Map.of("HostPort", String.valueOf(edgeServer.getPortSelect()))
+                    )
+                ),
+                "Memory", config.getRamCapacity() * 1024 * 1024 * 1024
             )
         );
 
@@ -81,18 +90,18 @@ public class CreateDockerService {
         .body(BodyInserters.fromValue(createContainerRequest))
         .retrieve()
         .bodyToMono(String.class)
-        .flatMap(createResponse -> {
+        .flatMap(createResponse -> Mono.fromCallable(() -> {
             String containerId = parseContainerId(createResponse);
             System.out.println(containerId); //테스트용
             this.containerId = containerId;
+            return createResponse;
+            // return dockerWebClient.post()
+            //         .uri("/containers/" + containerId.substring(0,12) + "/restart")
 
-            return dockerWebClient.post()
-                    .uri("/containers/" + containerId.substring(0,12) + "/restart")
-
-                    .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
-                    .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
-                    .thenReturn("Container started with ID: " + containerId);
-        }); //생성한 뒤 시작하는 코드 아직 미완.
+            //         .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
+            //         .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
+            //         .thenReturn("Container started with ID: " + containerId);
+        })); //생성한 뒤 시작하는 코드 아직 미완.
     }
 
     // 컨테이너 생성 응답에서 컨테이너 ID를 파싱
