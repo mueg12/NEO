@@ -4,11 +4,13 @@ import java.util.Map;
 import java.util.Collections;
 
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.neo.back.docker.dto.CreateDockerDto;
 import com.neo.back.docker.dto.EdgeServerInfoDto;
@@ -41,6 +43,8 @@ public class CreateDockerService {
     }
 
     public Mono<String> createContainer(CreateDockerDto config) {
+        DockerServer existingDocker = this.dockerRepo.findByUser(null);
+        if (existingDocker != null) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user already has an open server."));
 
         this.edgeServer = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + this.edgeServer.getIP()+ ":2375").filter(logRequestAndResponse()).build();
