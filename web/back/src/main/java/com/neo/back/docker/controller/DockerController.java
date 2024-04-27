@@ -1,8 +1,11 @@
 package com.neo.back.docker.controller;
 
+import com.neo.back.docker.entity.GameServerSetting;
+import com.neo.back.docker.service.GameServerPropertyService;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -10,19 +13,25 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 @RestController
 public class DockerController {
 
     private final WebClient dockerWebClient;
+
+    @Autowired
+    private GameServerPropertyService service;
+
 
     public DockerController(WebClient.Builder webClientBuilder) {
         this.dockerWebClient = webClientBuilder.baseUrl("http://외부ip:2375").
@@ -56,32 +65,56 @@ public class DockerController {
                 .thenReturn("Container stoped with ID: " + containerId);
 
     }
+
     @PostMapping("/api/change-file")
-    public Mono<String> changeFileAndBuildImage() throws IOException {
-        Path dockerfilePath = Path.of("Dockerfile");
-        Path helloFilePath = Path.of("hello.txt");
+    public Mono<String> changeFileInContainer() throws IOException {
+        String containerId = "your_container_id";
 
-        // Dockerfile 및 hello.txt 파일의 내용을 변경하거나 준비합니다.
-        Files.writeString(dockerfilePath, "FROM alpine\nWORKDIR /app\nCOPY hello.txt /app\nCMD [\"cat\", \"/app/hello.txt\"]");
-        Files.writeString(helloFilePath, "Hello, Docker! Modified!");
 
-        // context.tar 파일 생성
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (TarArchiveOutputStream taos = new TarArchiveOutputStream(new BufferedOutputStream(baos))) {
-            addToTar(taos, dockerfilePath);
-            addToTar(taos, helloFilePath);
-            taos.finish();
-        }
+        GameServerSetting settings = service.loadSettings(); // 서비스 메소드는 적절한 로직으로 구현되어야 함
 
-        byte[] tarContent = baos.toByteArray();
+        // 모든 필드와 값을 가져와서 "컬럼: 값" 형식의 문자열로 변환
+        String content = Arrays.stream(GameServerSetting.class.getDeclaredFields())
+                .map(field -> formatField(field, settings))
+                .collect(Collectors.joining("\n"));
 
-        // Docker 이미지 빌드 요청
-        return dockerWebClient.post()
-                .uri("/build?t=my-custom-image")
+
+        // 파일에 저장
+        Path path = Path.of("server.properties");
+        Files.writeString(path, content);
+
+        // 파일 내용을 tar 파일로 압축 (예제에서는 생략)
+        byte[] tarFile = createTarContent(content);
+
+
+        // Docker API를 통해 파일을 컨테이너에 복사
+        return dockerWebClient.put()
+                .uri("/containers/" + containerId + "/archive?path=/app/")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .bodyValue(tarContent)
+                .bodyValue(tarFile)
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(Void.class)  // 요청 성공시 응답 본문은 없음
+                .then(restartContainer(containerId))
+                .thenReturn("File updated and container restarted.");
+
+    }
+
+    private byte[] createTarContent(byte[] fileContent) {
+        // 여기에서 tar 파일 생성 로직을 구현해야 함. 실제 코드는 해당 로직에 따라 달라짐
+        return fileContent;  // 예제 코드로 실제로는 tar로 변환해야 함
+    }
+
+    private  Mono<Void> restartContainer(String containerId) {
+        return dockerWebClient.post()
+                .uri("/containers/" + containerId + "/restart")
+                .retrieve()
+                .bodyToMono(Void.class);
+    }
+
+    private File createTarFile(Path filePath) throws IOException {
+        // 파일을 tar로 압축하는 로직 구현 필요
+        // 이 예제에서는 단순화를 위해 직접 구현하지 않음
+        return filePath.toFile();  // 실제 사용시에는 tar 압축 로직을 구현해야 함
     }
     @PostMapping("/api/get-banlist")//특정 파일 읽어오는 용도 api
     public Mono<String> readAndConvertToJson(String containerId, String filePath) {
@@ -107,6 +140,16 @@ public class DockerController {
                 .uri("/containers/{containerId}/stats?stream=false", containerId)
                 .retrieve()
                 .bodyToMono(String.class);
+    }
+
+    private String formatField(Field field, GameServerSetting settings) {
+        try {
+            field.setAccessible(true); // private 필드에 접근할 수 있도록 설정
+            Object value = field.get(settings);
+            return field.getName() + ": " + value;
+        } catch (IllegalAccessException e) {
+            return field.getName() + ": error accessing value";
+        }
     }
 
     public Mono<String> executeCommand(String containerId, String command) {
