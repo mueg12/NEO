@@ -15,24 +15,22 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-public class DockerServer {
+public class DockerImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String serverName;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+    
+    private String imageId;
 
-    @ManyToOne
-    @JoinColumn(name = "edgeServerName")
-    private EdgeServer edgeServer;
-    private int port;
-    private String dockerId;
+    private Long size;
 
-    private int RAMCapacity;
+    private String date;
 
     @ManyToOne
     @JoinColumn(name = "game")
@@ -41,7 +39,4 @@ public class DockerServer {
     @OneToOne
     @JoinColumn
     private GameServerSetting setting;
-
-    private String serverComment;
-
 }
