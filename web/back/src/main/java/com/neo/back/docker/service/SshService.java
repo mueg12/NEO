@@ -70,8 +70,8 @@ public class SshService {
     }
     void selectPort(EdgeServerInfoDto edgeServer) {
         List<Integer> integerList = convertStringListToIntList(edgeServer.getPortUses());
-        int minRange = 0;
-        int maxRange = 25565;
+        int minRange = 30000;
+        int maxRange = 60000;
         int randomNumber = selectRandomNumber(minRange, maxRange, integerList);
         edgeServer.setPortSelect(randomNumber);
     }
