@@ -103,6 +103,7 @@ public class CreateDockerService {
 
         DockerServer dockerServer = new DockerServer();
         dockerServer.setUser(null);
+        dockerServer.setServerName(config.getServerName());
         dockerServer.setEdgeServer(this.edgeRepo.findByIp(this.edgeServer.getIP()));
         dockerServer.setPort(this.edgeServer.getPortSelect());
         dockerServer.setDockerId(this.containerId);

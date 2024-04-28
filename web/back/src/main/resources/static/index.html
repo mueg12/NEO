@@ -58,6 +58,10 @@
             <option value="mc1.20.4">마인크래프트 1.20.4</option>
         </select>
         <br>
+
+        <label for="serverName">서버 이름:</label>
+        <input type="text" id="serverName" name="serverName" placeholder="서버 이름을 입력하세요">
+        <br>
     
         <label for="ramCapacity">RAM 용량:</label>
         <select id="ramCapacity">
@@ -93,12 +97,14 @@
 <script>
     function submitForm() {
         const game = document.getElementById('game').value;
+        const serverName = document.getElementById('serverName').value;
         const ramCapacity = document.getElementById('ramCapacity').value;
         const paymentSystem = document.getElementById('paymentSystem').value;
         const time = document.getElementById('time').value;
     
         const formData = {
             game,
+            serverName,
             ramCapacity,
             paymentSystem,
             time
