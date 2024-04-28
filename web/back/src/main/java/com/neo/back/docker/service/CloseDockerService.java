@@ -13,8 +13,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.neo.back.docker.entity.DockerImage;
 import com.neo.back.docker.entity.DockerServer;
+import com.neo.back.docker.entity.EdgeServer;
 import com.neo.back.docker.repository.DockerImageRepository;
 import com.neo.back.docker.repository.DockerServerRepository;
+import com.neo.back.docker.repository.EdgeServerRepository;
 
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
@@ -24,13 +26,15 @@ import reactor.core.publisher.Mono;
 public class CloseDockerService {
     private final DockerServerRepository dockerServerRepo;
     private final DockerImageRepository dockerImageRepo;
+    private final EdgeServerRepository edgeServerRepo;
     private final WebClient.Builder webClientBuilder;
     private WebClient dockerWebClient;
     private String imageId;
 
-    public CloseDockerService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo, DockerImageRepository dockerImageRepo) {
+    public CloseDockerService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo, DockerImageRepository dockerImageRepo, EdgeServerRepository edgeServerRepo) {
         this.dockerServerRepo = dockerServerRepo;
         this.dockerImageRepo = dockerImageRepo;
+        this.edgeServerRepo = edgeServerRepo;
         this.webClientBuilder = webClientBuilder;
     }
 
@@ -88,6 +92,10 @@ public class CloseDockerService {
                 this.dockerImageRepo.save(dockerImage);
 
                 this.dockerServerRepo.deleteById(dockerServer.getId());
+
+                EdgeServer edgeServer = dockerServer.getEdgeServer();
+                edgeServer.setMemoryUse(edgeServer.getMemoryUse() - dockerServer.getRAMCapacity());
+                this.edgeServerRepo.save(edgeServer);
 
                 return Mono.just("Container close & Image create success");
             });
