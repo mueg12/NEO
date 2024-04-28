@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Collections;
 
 import org.json.JSONObject;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -66,19 +67,8 @@ public class CreateDockerService {
         );
 
         return createContainerRequest(createContainerRequest)
-            .flatMap(response -> Mono.fromCallable(() -> {
-
-                DockerServer dockerServer = new DockerServer();
-                dockerServer.setUser(null);
-                dockerServer.setEdgeServer(edgeRepo.findByIp(this.edgeServer.getIP()));
-                dockerServer.setPort(this.edgeServer.getPortSelect());
-                dockerServer.setDockerId(this.containerId);
-                dockerServer.setRAMCapacity(config.getRamCapacity());
-                dockerServer.setGame(gameRepo.findByGame(config.getGame()));
-                dockerServer.setSetting(gameRepo.findByGame(config.getGame()).getDefaultSetting());
-                dockerRepo.save(dockerServer);
-
-                return response;
+            .flatMap(response -> Mono.defer(() -> {
+                return databaseReflection(config);
             }));
     
     }
@@ -95,18 +85,33 @@ public class CreateDockerService {
             .body(BodyInserters.fromValue(createContainerRequest))
             .retrieve()
             .bodyToMono(String.class)
-            .flatMap(createResponse -> Mono.fromCallable(() -> {
+            .flatMap(createResponse -> Mono.defer(() -> {
                 String containerId = parseContainerId(createResponse);
                 System.out.println(containerId); //테스트용
                 this.containerId = containerId;
-                return createResponse;
-                // return dockerWebClient.post()
-                //         .uri("/containers/" + containerId.substring(0,12) + "/restart")
+                // return createResponse;
+                return dockerWebClient.post()
+                        .uri("/containers/" + containerId + "/restart")
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
+                        .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
+                        .thenReturn("Container started with ID: " + containerId);
+            }));
+    }
 
-                //         .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
-                //         .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
-                //         .thenReturn("Container started with ID: " + containerId);
-            })); //생성한 뒤 시작하는 코드 아직 미완.
+    private Mono<String> databaseReflection(CreateDockerDto config) {
+
+        DockerServer dockerServer = new DockerServer();
+        dockerServer.setUser(null);
+        dockerServer.setEdgeServer(this.edgeRepo.findByIp(this.edgeServer.getIP()));
+        dockerServer.setPort(this.edgeServer.getPortSelect());
+        dockerServer.setDockerId(this.containerId);
+        dockerServer.setRAMCapacity(config.getRamCapacity());
+        dockerServer.setGame(this.gameRepo.findByGame(config.getGame()));
+        dockerServer.setSetting(this.gameRepo.findByGame(config.getGame()).getDefaultSetting());
+        this.dockerRepo.save(dockerServer);
+
+        return Mono.just("Container create Success");
     }
 
     // 컨테이너 생성 응답에서 컨테이너 ID를 파싱

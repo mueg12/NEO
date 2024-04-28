@@ -4,15 +4,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.neo.back.docker.dto.DockerListDto;
 import com.neo.back.docker.dto.FileDataDto;
 import com.neo.back.docker.entity.DockerServer;
 import com.neo.back.docker.repository.DockerServerRepository;
@@ -29,18 +28,6 @@ public class GameDataService {
     public GameDataService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo) {
         this.dockerServerRepo = dockerServerRepo;
         this.webClientBuilder = webClientBuilder;
-    }
-
-    public List<DockerListDto> DockerListInfo(Long userId){
-        List<DockerServer> dockerServerData = dockerServerRepo.findAllByUserId(userId);
-        List<DockerListDto> dockerServerList = new ArrayList<>();
-        for (DockerServer entity : dockerServerData){
-            DockerListDto dockerServer = new DockerListDto();
-            dockerServer.setId(entity.getId());
-            dockerServer.setUserId(entity.getUser());
-            dockerServerList.add(dockerServer);
-        }
-        return dockerServerList;
     }
     
     public ExchangeFilterFunction logRequestAndResponse() {
@@ -69,10 +56,10 @@ public class GameDataService {
         }));
     }
     
-    public Mono<String> getFileAndFolderListInst(Long id, String path) {
-        Optional<DockerServer> dockerServer = dockerServerRepo.findById(id);
-        String ip = dockerServer.get().getEdgeServer().getIp();
-        String dockerId = dockerServer.get().getDockerId();
+    public Mono<String> getFileAndFolderListInst(String path) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+        String ip = dockerServer.getEdgeServer().getIp();
+        String dockerId = dockerServer.getDockerId();
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();
 
         String[] cmdArray = new String[]{"ls", "-l","/server/" + path};
@@ -92,17 +79,15 @@ public class GameDataService {
         }));
     }
     
-    private String parseContainerId(String response) {
-        String idStr = "\"Id\":\"";
-        int startIndex = response.indexOf(idStr) + idStr.length();
-        int endIndex = response.indexOf("\"", startIndex);
-        return response.substring(startIndex, endIndex);
+    private String parseExecInstanceId(String response) {
+        JSONObject jsonObject = new JSONObject(response);
+        return jsonObject.getString("Id");
     }
     
-    public List<FileDataDto> getFileAndFolderList(Long id, Mono<String> fileListInst) {
-        Optional<DockerServer> dockerServer = dockerServerRepo.findById(id);
-        String ip = dockerServer.get().getEdgeServer().getIp();
-        String fileListInstId = parseContainerId(fileListInst.block());
+    public List<FileDataDto> getFileAndFolderList(Mono<String> fileListInst) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+        String ip = dockerServer.getEdgeServer().getIp();
+        String fileListInstId = parseExecInstanceId(fileListInst.block());
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();
         
         var FileAndFolder = Map.of(

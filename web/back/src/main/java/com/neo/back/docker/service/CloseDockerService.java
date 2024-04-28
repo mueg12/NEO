@@ -45,6 +45,8 @@ public class CloseDockerService {
             .switchIfEmpty(Mono.defer(() -> databaseReflection(dockerServer)));
     }
 
+
+
     private Mono<String> closeContainerRequest(DockerServer dockerServer) {
         return dockerWebClient.post()
             .uri(uriBuilder -> uriBuilder.path("/commit")
@@ -87,7 +89,7 @@ public class CloseDockerService {
 
                 this.dockerServerRepo.deleteById(dockerServer.getId());
 
-                return Mono.just("Success");
+                return Mono.just("Container close & Image create success");
             });
     }
 
