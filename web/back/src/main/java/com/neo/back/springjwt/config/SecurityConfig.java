@@ -63,11 +63,11 @@ public class SecurityConfig {
                                 CorsConfiguration configuration = new CorsConfiguration();
 
                                 //프론트단 port 허용
-                                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                                configuration.setAllowedOrigins(Collections.singletonList("*"));
                                 //허용할 메소드 GET,POST,DELETE 등 모두 허용
                                 configuration.setAllowedMethods(Collections.singletonList("*"));
                                 //프론트에서 credential 허용했으면 똑같이 true
-                                configuration.setAllowCredentials(true);
+                                //configuration.setAllowCredentials(true);
                                 //헤더 허용
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setMaxAge(3600L);
