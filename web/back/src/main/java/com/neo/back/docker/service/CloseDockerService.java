@@ -53,26 +53,31 @@ public class CloseDockerService {
 
     private Mono<String> closeContainerRequest(DockerServer dockerServer) {
         return dockerWebClient.post()
-            .uri(uriBuilder -> uriBuilder.path("/commit")
-                .queryParam("container", dockerServer.getDockerId())
-                //.queryParam("repo", dockerServer.getServerName())
-                //.queryParam("author", author)
-                .build())
+            .uri("/containers/" + dockerServer.getDockerId() + "/stop")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .bodyToMono(String.class)
-            .flatMap(response -> {
-                String imageId = parseImageId(response);
-                System.out.println(imageId); //테스트용
-                this.imageId = imageId;
-                return dockerWebClient.delete()
-                    .uri(uriBuilder -> uriBuilder
-                        .pathSegment("containers", dockerServer.getDockerId())
+            .switchIfEmpty(Mono.defer(() -> {
+                return dockerWebClient.post()
+                    .uri(uriBuilder -> uriBuilder.path("/commit")
+                        .queryParam("container", dockerServer.getDockerId())
+                        //.queryParam("repo", dockerServer.getServerName())
+                        //.queryParam("author", author)
                         .build())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .retrieve()
-                    .bodyToMono(String.class);
-            });
+                    .bodyToMono(String.class)
+                    .flatMap(commitResponse -> {
+                        String imageId = parseImageId(commitResponse);
+                        System.out.println(imageId); //테스트용
+                        this.imageId = imageId;
+                        return dockerWebClient.delete()
+                            .uri("containers/" + dockerServer.getDockerId())
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .retrieve()
+                            .bodyToMono(String.class);
+                    });
+            }));
     }
 
     private Mono<String> databaseReflection(DockerServer dockerServer) {
