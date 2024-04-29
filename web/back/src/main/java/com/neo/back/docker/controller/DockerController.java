@@ -3,25 +3,28 @@ package com.neo.back.docker.controller;
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @RestController
@@ -68,7 +71,7 @@ public class DockerController {
 
     @PostMapping("/api/change-file")
     public Mono<String> changeFileInContainer() throws IOException {
-        String containerId = "your_container_id";
+        String containerId = "ed25bb1b9e60";
 
 
         GameServerSetting settings = service.loadSettings(); // 서비스 메소드는 적절한 로직으로 구현되어야 함
@@ -79,17 +82,26 @@ public class DockerController {
                 .collect(Collectors.joining("\n"));
 
 
-        // 파일에 저장
-        Path path = Path.of("server.properties");
-        Files.writeString(path, content);
+        System.out.println(content);
 
-        // 파일 내용을 tar 파일로 압축 (예제에서는 생략)
-        byte[] tarFile = createTarContent(content);
 
+
+        // content 문자열을 바이트 배열로 변환
+        byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
+
+
+        // 파일 내용을 tar 파일로 압축
+        byte[] tarFile = createTarContent(contentBytes);
+
+        // tar 파일을 저장할 경로
+        Path tarPath = Path.of("server.properties.tar");
+
+        // tar 파일 바이트 배열을 실제 파일로 저장
+        Files.write(tarPath, tarFile);
 
         // Docker API를 통해 파일을 컨테이너에 복사
         return dockerWebClient.put()
-                .uri("/containers/" + containerId + "/archive?path=/app/")
+                .uri("/containers/" + containerId + "/archive?path=/server")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .bodyValue(tarFile)
                 .retrieve()
@@ -99,9 +111,58 @@ public class DockerController {
 
     }
 
-    private byte[] createTarContent(byte[] fileContent) {
-        // 여기에서 tar 파일 생성 로직을 구현해야 함. 실제 코드는 해당 로직에 따라 달라짐
-        return fileContent;  // 예제 코드로 실제로는 tar로 변환해야 함
+    @GetMapping("/api/get-file")
+    public Mono<String> getFileFromContainer() {
+        String containerId = "7f94b1a2d8e0";
+        String filePathInContainer = "/server/server.properties";
+
+        // Docker 컨테이너로부터 파일 받아오기
+        return dockerWebClient.get()
+                .uri("/containers/" + containerId + "/archive?path=" + filePathInContainer)
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .retrieve()
+                .bodyToMono(DataBuffer.class)  // DataBuffer로 응답 바디 받기
+                .flatMap(dataBuffer -> {
+                    // 받아온 tar 파일을 로컬에 저장
+                    Path localTarPath = Path.of("server.properties.tar");
+                    try (WritableByteChannel channel = Files.newByteChannel(localTarPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                        // DataBuffer에서 데이터를 읽어 로컬 파일에 쓰기
+                        channel.write(dataBuffer.asByteBuffer());
+                        return Mono.just("File received and saved as " + localTarPath.toString());
+                    } catch (IOException e) {
+                        return Mono.error(e);
+                    }
+                });
+    }
+
+
+    @GetMapping("/api/get-mcproperties")
+    public Object getmcpropertiesFromContainer(){
+
+        String tarPath = "server.properties.tar";
+
+        try {
+            String propertiesString  = extractPropertiesFromTar(tarPath);
+
+            JSONObject json = new JSONObject();
+            String[] lines = propertiesString .split("\n");
+
+            for (String line : lines) {
+                if (!line.startsWith("#") && !line.trim().isEmpty()) {
+                    String[] keyValue = line.split("=", 2);
+                    if (keyValue.length == 2) {
+                        json.put(keyValue[0], keyValue[1]);
+                    }
+                }
+            }
+
+            return ResponseEntity.ok(json.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error extracting server.properties";
+        }
+
+
     }
 
     private  Mono<Void> restartContainer(String containerId) {
@@ -111,10 +172,38 @@ public class DockerController {
                 .bodyToMono(Void.class);
     }
 
-    private File createTarFile(Path filePath) throws IOException {
-        // 파일을 tar로 압축하는 로직 구현 필요
-        // 이 예제에서는 단순화를 위해 직접 구현하지 않음
-        return filePath.toFile();  // 실제 사용시에는 tar 압축 로직을 구현해야 함
+    private byte[] createTarContent(byte[] fileContent) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             TarArchiveOutputStream tarOut = new TarArchiveOutputStream(out)) {
+
+            // TarArchiveEntry 설정 (파일 이름은 임의로 지정)
+            TarArchiveEntry entry = new TarArchiveEntry("server.properties");
+            entry.setSize(fileContent.length); // 파일 크기 설정
+            tarOut.putArchiveEntry(entry);
+
+            // 파일 내용 쓰기
+            tarOut.write(fileContent);
+            tarOut.closeArchiveEntry();
+
+            // tarOut을 닫아야 tar 파일 완성
+            tarOut.finish();
+
+            // 완성된 tar 파일의 바이트 배열 반환
+            return out.toByteArray();
+        }
+    }
+
+    private String extractPropertiesFromTar(String tarFilePath) throws IOException {
+        try (TarArchiveInputStream tarInput = new TarArchiveInputStream(new FileInputStream(tarFilePath))) {
+            tarInput.getNextTarEntry(); // server.properties 파일로 바로 이동
+            ByteArrayOutputStream contentBuffer = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = tarInput.read(buffer)) > 0) {
+                contentBuffer.write(buffer, 0, len);
+            }
+            return contentBuffer.toString(StandardCharsets.UTF_8.name());
+        }
     }
     @PostMapping("/api/get-banlist")//특정 파일 읽어오는 용도 api
     public Mono<String> readAndConvertToJson(String containerId, String filePath) {
@@ -145,8 +234,10 @@ public class DockerController {
     private String formatField(Field field, GameServerSetting settings) {
         try {
             field.setAccessible(true); // private 필드에 접근할 수 있도록 설정
+            String fieldName = field.getName().replace('_', '-');
+
             Object value = field.get(settings);
-            return field.getName() + ": " + value;
+            return fieldName + ":" + value;
         } catch (IllegalAccessException e) {
             return field.getName() + ": error accessing value";
         }
