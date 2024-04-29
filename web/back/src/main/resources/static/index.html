@@ -21,6 +21,22 @@
 </style>
 
 <style>
+    /*테이블 스타일*/
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    h2 {
+        color: #333;
+    }
+</style>
+
+<style>
     /* 업로드 영역 스타일 */
     #upload-area {
         border: 2px dashed #ccc;
@@ -62,7 +78,7 @@
         <label for="serverName">서버 이름:</label>
         <input type="text" id="serverName" name="serverName" placeholder="서버 이름을 입력하세요">
         <br>
-    
+
         <label for="ramCapacity">RAM 용량:</label>
         <select id="ramCapacity">
             <option value=2>2GB</option>
@@ -70,7 +86,7 @@
             <option value=8>8GB</option>
         </select>
         <br>
-    
+
         <label for="paymentSystem">요금제:</label>
         <select id="paymentSystem">
             <option value="time">시간단위</option>
@@ -78,7 +94,7 @@
             <option value="month">월단위</option>
         </select>
         <br>
-    
+
         <label for="time">시간:</label>
         <select id="time">
             <option value="1hour">1시간</option>
@@ -86,10 +102,10 @@
             <option value="3hours">3시간</option>
         </select>
         <br>
-    
+
         <button type="button" onclick="submitForm()">생성</button>
     </form>
-    
+
     <div class="loading-overlay" id="loadingOverlay">
         <div>생성 중...</div>
     </div>
@@ -101,7 +117,7 @@
         const ramCapacity = document.getElementById('ramCapacity').value;
         const paymentSystem = document.getElementById('paymentSystem').value;
         const time = document.getElementById('time').value;
-    
+
         const formData = {
             game,
             serverName,
@@ -109,10 +125,10 @@
             paymentSystem,
             time
         };
-    
+
         // 로딩 창 보이기
         document.getElementById('loadingOverlay').style.display = 'flex';
-    
+
         fetch('/api/container/create', {
             method: 'POST',
             headers: {
@@ -140,10 +156,42 @@
         });
     }
 </script>
+    <div id="loading" style="display: none;">삭제 중...</div>
+    <div id="responseMessage"></div>
+    <button id="deleteButton">컨테이너 삭제</button>
+
+    <script>
+        document.getElementById('deleteButton').addEventListener('click', async () => {
+            const loadingElement = document.getElementById('loading');
+            const responseMessage = document.getElementById('responseMessage');
+
+            // 로딩 인디케이터를 표시합니다.
+            loadingElement.style.display = 'block';
+            responseMessage.textContent = '';
+
+            try {
+                const response = await fetch('/api/container/close', {
+                    method: 'PUT',
+                });
+
+                if (!response.ok) {
+                    throw new Error('데이터 삭제 실패!');
+                }
+
+                const result = await response.json();
+                responseMessage.textContent = '성공적으로 삭제되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
+            } finally {
+                // 요청 처리가 완료되면 로딩 인디케이터를 숨깁니다.
+                loadingElement.style.display = 'none';
+            }
+        });
+    </script>
 
 <div id="userDockerList"></div>
 
-<h3>해당 폴더에 있는 폴더 및 파일 목록:</h3>
+<h3>폴더 및 파일 목록:</h3>
 <button id="goBackButton">뒤로 가기</button>
 <ul id="fileList"></ul>
 
@@ -154,7 +202,7 @@
         // getUserInfo();
         refreshFileList(``);
     });
-    
+
     function refreshFileList(path) {
         fetch(`/api/docker-file-list?path=${path}`)
         .then(response => response.json())
@@ -212,6 +260,67 @@
     }
 
 </script>
+
+    <h1>데이터베이스 정보</h1>
+
+    <section>
+        <h2>dockerImage</h2>
+        <table id="dockerImage">
+            <tr>
+                <th>ID</th>
+                <th>서버이름</th>
+                <th>이미지ID</th>
+                <th>크기</th>
+                <th>생성날짜</th>
+                <th>게임</th>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>dockerServer</h2>
+        <table id="dockerServer">
+            <tr>
+                <th>ID</th>
+                <th>서버이름</th>
+                <th>엣지서버</th>
+                <th>포트</th>
+                <th>도커ID</th>
+                <th>램</th>
+                <th>게임</th>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>edgeServer</h2>
+        <table id="edgeServer">
+            <tr>
+                <th>서버이름</th>
+                <th>총메모리</th>
+                <th>사용메모리</th>
+            </tr>
+        </table>
+    </section>
+
+    <script>
+        async function fetchData(tableId, apiUrl) {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const table = document.getElementById(tableId);
+            data.forEach(item => {
+                const row = table.insertRow(-1);
+                Object.values(item).forEach(text => {
+                    const cell = row.insertCell(-1);
+                    cell.textContent = text;
+                });
+            });
+        }
+
+        fetchData('dockerImage', '/test/dockerImage');
+        fetchData('dockerServer', '/test/dockerServer');
+        fetchData('edgeServer', '/test/edgeServer');
+    </script>
 
 
 </body>
