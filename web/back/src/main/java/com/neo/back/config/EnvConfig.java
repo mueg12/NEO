@@ -11,15 +11,4 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 	@PropertySource("classpath:env.properties") // env.properties 파일 소스 등록
 })
 public class EnvConfig implements WebMvcConfigurer {
-
-	@Override
-	public void addCorsMappings(CorsRegistry corsRegistry){
-
-		corsRegistry.addMapping("/**")
-				.exposedHeaders("Set-Cookie")
-				.allowedOrigins("http://localhost:8080");
-
-
-	}
-
 }
