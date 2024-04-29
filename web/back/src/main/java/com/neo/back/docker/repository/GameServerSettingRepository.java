@@ -1,11 +1,9 @@
 package com.neo.back.docker.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import com.neo.back.docker.entity.GameServerSetting;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
-public interface GameServerSettingRepository extends JpaRepository <GameServerSetting, String> {
-    
+public interface GameServerSettingRepository extends JpaRepository<GameServerSetting, Long> {
+
+
+
 }

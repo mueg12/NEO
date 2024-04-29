@@ -13,7 +13,8 @@ import lombok.Setter;
 public class Game {
     @Id
     private String game;
-    
+
+    private String user;
     private String dockerImage;
 
     @ManyToOne

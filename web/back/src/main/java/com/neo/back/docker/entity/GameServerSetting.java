@@ -1,15 +1,66 @@
 package com.neo.back.docker.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
-@Setter
 @Getter
+@Setter
+@Entity
 public class GameServerSetting {
     @Id
-    String settingId;
-    
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Boolean allow_flight = false;
+
+    private Boolean allow_nether = true;
+
+    private String difficulty = "easy";
+
+    private Boolean enable_command_block = false;
+
+    private Boolean enforce_whitelist = false;
+
+    private String gamemode = "survival";
+
+    private Boolean generate_structures = true;
+
+    private Boolean hardcore = false;
+
+    private Integer max_build_height = 256;
+
+    private Integer max_players = 20;
+
+    private String motd = "A Minecraft Server";
+
+    private Boolean online_mode=true;
+
+    private Integer player_idle_timeout=0;
+
+    private Boolean prevent_proxy_connections = false;
+
+    private Boolean pvp = true;
+
+    private Boolean spawn_animals= true;
+
+    private Boolean spawn_monsters = true;
+
+    private Boolean spawn_npcs = true;
+
+    private Integer spawn_protection = 16;
+
+    private Integer view_distance = 10;
+
+    private Boolean white_list = false;
+
+    // 기본 생성자
+    public GameServerSetting() {
+    }
+
+    // Getters and Setters
+    // ...
 }
