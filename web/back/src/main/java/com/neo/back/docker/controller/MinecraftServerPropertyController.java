@@ -2,6 +2,9 @@ package com.neo.back.docker.controller;
 
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -10,16 +13,12 @@ import java.io.IOException;
 
 
 @RestController
+@RequiredArgsConstructor
 public class MinecraftServerPropertyController {
 
     private final GameServerPropertyService service;
 
     private final DockerController dockerController;
-
-    public MinecraftServerPropertyController(GameServerPropertyService service, DockerController dockerController) {
-        this.service = service;
-        this.dockerController = dockerController;
-    }
 
     public Mono<GameServerSetting> updateServerProperties(@RequestBody GameServerSetting properties) {
         // Save properties to the database

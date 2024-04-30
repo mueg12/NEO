@@ -5,19 +5,17 @@ import org.springframework.web.bind.annotation.*;
 import com.neo.back.docker.dto.FileDataDto;
 import com.neo.back.docker.service.GameDataService;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 
 @RestController
+@RequiredArgsConstructor
 public class GameServerController {
 
     private final GameDataService gameDataService;
-
-    public GameServerController(GameDataService gameDataService) {
-        this.gameDataService = gameDataService;
-    }
 
     @GetMapping("/api/docker-file-list")
     public ResponseEntity<?> getDockerFileList(@RequestParam String path) {

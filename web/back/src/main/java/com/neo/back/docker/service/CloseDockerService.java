@@ -19,10 +19,12 @@ import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CloseDockerService {
     private final DockerServerRepository dockerServerRepo;
     private final DockerImageRepository dockerImageRepo;
@@ -30,13 +32,6 @@ public class CloseDockerService {
     private final WebClient.Builder webClientBuilder;
     private WebClient dockerWebClient;
     private String imageId;
-
-    public CloseDockerService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo, DockerImageRepository dockerImageRepo, EdgeServerRepository edgeServerRepo) {
-        this.dockerServerRepo = dockerServerRepo;
-        this.dockerImageRepo = dockerImageRepo;
-        this.edgeServerRepo = edgeServerRepo;
-        this.webClientBuilder = webClientBuilder;
-    }
 
     public Mono<String> closeDockerService() {
         DockerServer dockerServer = dockerServerRepo.findByUser(null);
@@ -61,7 +56,7 @@ public class CloseDockerService {
                 return dockerWebClient.post()
                     .uri(uriBuilder -> uriBuilder.path("/commit")
                         .queryParam("container", dockerServer.getDockerId())
-                        //.queryParam("repo", dockerServer.getServerName())
+                        .queryParam("repo", dockerServer.getServerName())
                         //.queryParam("author", author)
                         .build())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

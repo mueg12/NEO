@@ -5,6 +5,7 @@ import com.neo.back.docker.dto.EdgeServerInfoDto;
 import com.neo.back.docker.entity.EdgeServer;
 import com.neo.back.docker.repository.EdgeServerRepository;
 
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
@@ -16,15 +17,11 @@ import java.util.Comparator;
 
 
 @Service
+@RequiredArgsConstructor
 public class SelectEdgeServerService {
 
 	private final EdgeServerRepository edgeServerRepo;
 	private final GetEdgeServerService getEdgeServerService;
-
-	public SelectEdgeServerService(EdgeServerRepository edgeServerRepo,GetEdgeServerService getEdgeServerService){
-		this.edgeServerRepo = edgeServerRepo;
-		this.getEdgeServerService = getEdgeServerService;
-	}
 	
 	public synchronized EdgeServerInfoDto selectingEdgeServer(int UserMemory){
 		List<EdgeServer> allEdgeServers = edgeServerRepo.findAll();

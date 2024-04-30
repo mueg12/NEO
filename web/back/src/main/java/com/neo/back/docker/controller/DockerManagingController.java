@@ -13,22 +13,18 @@ import com.neo.back.docker.service.CloseDockerService;
 import com.neo.back.docker.service.CreateDockerService;
 import com.neo.back.docker.service.GetMyServerListService;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
+@RequiredArgsConstructor
 public class DockerManagingController {
     
     private final GetMyServerListService getServerService;
     private final CreateDockerService createDockerService;
     private final CloseDockerService closeDockerService;
-
-    public DockerManagingController(GetMyServerListService getServerService, CreateDockerService createDockerService, CloseDockerService closeDockerService) {
-        this.getServerService = getServerService;
-        this.createDockerService = createDockerService;
-        this.closeDockerService = closeDockerService;
-    }
 
     @GetMapping("/api/myServer/list")
     public List<MyServerListDto> getMyServerList() {

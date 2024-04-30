@@ -6,6 +6,9 @@ import com.neo.back.docker.entity.EdgeServer;
 import com.neo.back.docker.repository.DockerImageRepository;
 import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,17 +17,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 public class ForTestController {
 
     private final DockerImageRepository dockerImageRepo;
     private final DockerServerRepository dockerServerRepo;
     private final EdgeServerRepository edgeServerRepo;
-
-    public ForTestController (DockerImageRepository dockerImageRepo, DockerServerRepository dockerServerRepo, EdgeServerRepository edgeServerRepo) {
-        this.dockerServerRepo = dockerServerRepo;
-        this.dockerImageRepo = dockerImageRepo;
-        this.edgeServerRepo = edgeServerRepo;
-    }
 
     @GetMapping("/test/dockerImage")
     public ResponseEntity<List<testDockerImageDto>> getTable1Data() {

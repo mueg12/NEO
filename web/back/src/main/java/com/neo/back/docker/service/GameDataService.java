@@ -16,19 +16,16 @@ import com.neo.back.docker.dto.FileDataDto;
 import com.neo.back.docker.entity.DockerServer;
 import com.neo.back.docker.repository.DockerServerRepository;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class GameDataService {
 
     private final DockerServerRepository dockerServerRepo;
     private final WebClient.Builder webClientBuilder;
     private WebClient dockerWebClient;
-
-    public GameDataService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo) {
-        this.dockerServerRepo = dockerServerRepo;
-        this.webClientBuilder = webClientBuilder;
-    }
     
     public ExchangeFilterFunction logRequestAndResponse() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {

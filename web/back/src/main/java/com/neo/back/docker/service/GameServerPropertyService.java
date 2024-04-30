@@ -2,6 +2,9 @@ package com.neo.back.docker.service;
 
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.repository.GameServerSettingRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class GameServerPropertyService {
 
     private final WebClient dockerWebClient;

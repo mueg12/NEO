@@ -21,10 +21,12 @@ import com.neo.back.docker.repository.EdgeServerRepository;
 import com.neo.back.docker.repository.GameRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CreateDockerService {
     private final DockerServerRepository dockerRepo;
     private final EdgeServerRepository edgeRepo;
@@ -34,14 +36,6 @@ public class CreateDockerService {
     private final WebClient.Builder webClientBuilder;
     private EdgeServerInfoDto edgeServer;
     private String containerId;
-
-    public CreateDockerService(WebClient.Builder webClientBuilder, SelectEdgeServerService selectEdgeServerService, DockerServerRepository dockerRepo, EdgeServerRepository edgeRepo, GameRepository gameRepo) {
-        this.dockerRepo = dockerRepo;
-        this.edgeRepo = edgeRepo;
-        this.gameRepo = gameRepo;
-        this.selectEdgeServerService = selectEdgeServerService;
-        this.webClientBuilder = webClientBuilder;
-    }
 
     public Mono<String> createContainer(CreateDockerDto config) {
         DockerServer existingDocker = this.dockerRepo.findByUser(null);

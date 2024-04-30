@@ -2,11 +2,12 @@ package com.neo.back.docker.controller;
 
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -18,15 +19,11 @@ import java.nio.file.Path;
 
 
 @RestController
+@RequiredArgsConstructor
 public class DockerController {
 
-    @Autowired
-    private GameServerPropertyService service;
+    private final GameServerPropertyService service;
 
-
-    public DockerController() {
-
-    }
     @PostMapping("/api/change-file")
     public Mono<String> changeFileInContainer() throws IOException {
         String containerId = "87e5304723d4";

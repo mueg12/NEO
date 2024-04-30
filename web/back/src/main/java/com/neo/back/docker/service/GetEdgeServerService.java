@@ -7,16 +7,16 @@ import com.jcraft.jsch.Session;
 import com.neo.back.docker.dto.EdgeServerCmdDto;
 import com.neo.back.docker.dto.EdgeServerInfoDto;
 import com.neo.back.docker.entity.EdgeServer;
+
+import lombok.RequiredArgsConstructor;
+
 import java.lang.reflect.Field;
 
 @Service
+@RequiredArgsConstructor
 public class GetEdgeServerService {
 
     private final SshService sshService;
-
-    public GetEdgeServerService(SshService sshService) {
-        this.sshService = sshService;
-    }
 
     public EdgeServerInfoDto changeEdgeServerEntityTODTO(EdgeServer edgeServer) {
         EdgeServerInfoDto edgedgeServerDTO = new EdgeServerInfoDto(edgeServer.getEdgeServerName());

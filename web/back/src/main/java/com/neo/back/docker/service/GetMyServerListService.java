@@ -10,15 +10,13 @@ import com.neo.back.docker.entity.DockerImage;
 import com.neo.back.docker.repository.DockerImageRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class GetMyServerListService {
     private final DockerImageRepository dockerImageRepo;
-    
-    public GetMyServerListService(DockerImageRepository dockerImageRepo) {
-        this.dockerImageRepo = dockerImageRepo;
-    }
 
     public List<MyServerListDto> getMyServerList() {
         List<DockerImage> dockerImages = dockerImageRepo.findByUser(null);
