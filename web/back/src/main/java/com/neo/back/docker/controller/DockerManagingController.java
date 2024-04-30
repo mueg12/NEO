@@ -26,7 +26,7 @@ public class DockerManagingController {
     private final CreateDockerService createDockerService;
     private final CloseDockerService closeDockerService;
 
-    @GetMapping("/api/myServer/list")
+    @GetMapping("/api/container/list")
     public List<MyServerListDto> getMyServerList() {
 
         return getServerService.getMyServerList();

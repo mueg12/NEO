@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.json.JSONObject;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +22,7 @@ import com.neo.back.docker.repository.EdgeServerRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -30,6 +33,7 @@ public class CloseDockerService {
     private final DockerImageRepository dockerImageRepo;
     private final EdgeServerRepository edgeServerRepo;
     private final WebClient.Builder webClientBuilder;
+    private final SaveToNasService saveToNasService;
     private WebClient dockerWebClient;
     private String imageId;
 
@@ -80,12 +84,12 @@ public class CloseDockerService {
             .uri("/images/{imageName}/json", this.imageId)
             .retrieve()
             .bodyToMono(String.class)
-            .flatMap(imageInfo -> {
+            .flatMap(response -> {
                 DockerImage dockerImage = new DockerImage();
                 dockerImage.setServerName(dockerServer.getServerName());
                 dockerImage.setUser(dockerServer.getUser());
                 dockerImage.setImageId(this.imageId);
-                dockerImage.setSize(parseImageSize(imageInfo));
+                dockerImage.setSize(parseImageSize(response));
                 dockerImage.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 dockerImage.setGame(dockerServer.getGame());
                 dockerImage.setSetting(dockerServer.getSetting());
@@ -96,6 +100,31 @@ public class CloseDockerService {
                 EdgeServer edgeServer = dockerServer.getEdgeServer();
                 edgeServer.setMemoryUse(edgeServer.getMemoryUse() - dockerServer.getRAMCapacity());
                 this.edgeServerRepo.save(edgeServer);
+
+                return saveDockerImage();
+            });
+    }
+
+    private Mono<String> saveDockerImage() {
+        return dockerWebClient.get()
+            .uri("/images/{imageName}/get", this.imageId)
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
+            .retrieve()
+            .bodyToMono(byte[].class)
+            .flatMap(response -> {
+                saveToNasService.saveDockerImage(response);
+                return Mono.just("Container close & Image create success");
+            });
+
+    }
+
+    private Mono<String> deleteLeftDockerImage() {
+        return dockerWebClient.get()
+            .uri("/images/{imageName}/get", this.imageId)
+            .retrieve()
+            .bodyToMono(String.class)
+            .flatMap(imageInfo -> {
+                
 
                 return Mono.just("Container close & Image create success");
             });

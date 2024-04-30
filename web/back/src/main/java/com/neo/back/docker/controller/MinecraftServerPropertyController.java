@@ -1,36 +1,36 @@
-package com.neo.back.docker.controller;
+// package com.neo.back.docker.controller;
 
-import com.neo.back.docker.entity.GameServerSetting;
-import com.neo.back.docker.service.GameServerPropertyService;
+// import com.neo.back.docker.entity.GameServerSetting;
+// import com.neo.back.docker.service.GameServerPropertyService;
 
-import lombok.RequiredArgsConstructor;
+// import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
+// import org.springframework.web.bind.annotation.RequestBody;
+// import org.springframework.web.bind.annotation.RestController;
+// import reactor.core.publisher.Mono;
 
-import java.io.IOException;
+// import java.io.IOException;
 
 
-@RestController
-@RequiredArgsConstructor
-public class MinecraftServerPropertyController {
+// @RestController
+// @RequiredArgsConstructor
+// public class MinecraftServerPropertyController {
 
-    private final GameServerPropertyService service;
+//     private final GameServerPropertyService service;
 
-    private final DockerController dockerController;
+//     private final DockerController dockerController;
 
-    public Mono<GameServerSetting> updateServerProperties(@RequestBody GameServerSetting properties) {
-        // Save properties to the database
-        GameServerSetting savedProperties = service.save(properties);
+//     public Mono<GameServerSetting> updateServerProperties(@RequestBody GameServerSetting properties) {
+//         // Save properties to the database
+//         GameServerSetting savedProperties = service.save(properties);
 
-        // Assuming the properties need to be updated in a Docker container as well
-        try {
-            return dockerController.changeFileInContainer()
-                    .thenReturn(savedProperties);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//         // Assuming the properties need to be updated in a Docker container as well
+//         try {
+//             return dockerController.changeFileInContainer()
+//                     .thenReturn(savedProperties);
+//         } catch (IOException e) {
+//             throw new RuntimeException(e);
+//         }
+//     }
 
-}
+// }
