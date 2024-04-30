@@ -60,7 +60,7 @@ public class CloseDockerService {
                 return dockerWebClient.post()
                     .uri(uriBuilder -> uriBuilder.path("/commit")
                         .queryParam("container", dockerServer.getDockerId())
-                        .queryParam("repo", dockerServer.getServerName())
+                        .queryParam("repo", dockerServer.getServerName()) // 한글로하면 오류남
                         //.queryParam("author", author)
                         .build())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -71,7 +71,7 @@ public class CloseDockerService {
                         System.out.println(imageId); //테스트용
                         this.imageId = imageId;
                         return dockerWebClient.delete()
-                            .uri("containers/" + dockerServer.getDockerId())
+                            .uri("/containers/" + dockerServer.getDockerId())
                             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                             .retrieve()
                             .bodyToMono(String.class);
@@ -101,19 +101,20 @@ public class CloseDockerService {
                 edgeServer.setMemoryUse(edgeServer.getMemoryUse() - dockerServer.getRAMCapacity());
                 this.edgeServerRepo.save(edgeServer);
 
-                return saveDockerImage();
+                saveDockerImage();
+                return Mono.just("Container close & Image create success");
             });
     }
 
-    private Mono<String> saveDockerImage() {
+    @SuppressWarnings("deprecation")
+    private Flux<Object> saveDockerImage() {
         return dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
-            .retrieve()
-            .bodyToMono(byte[].class)
-            .flatMap(response -> {
-                saveToNasService.saveDockerImage(response);
-                return Mono.just("Container close & Image create success");
+            .exchange()
+            .flatMapMany(clientResponse -> clientResponse.bodyToFlux(DataBuffer.class))
+            .flatMap(dataBuffer -> {
+                return saveToNasService.saveDockerImage(dataBuffer.asByteBuffer());
             });
 
     }

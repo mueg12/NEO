@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.*;
 
 @Service
@@ -18,7 +19,7 @@ import java.nio.file.*;
 public class SaveToNasService {
     private final Path rootLocation = Paths.get("/mnt/nas");
 
-    public Mono<ResponseEntity<String>> saveDockerImage (byte[] file) {
+    public Mono<ResponseEntity<String>> saveDockerImage (ByteBuffer byteBuffer) {
         Path path = rootLocation.resolve("dockerImage");
         try {
             // 파일 저장 경로 생성
@@ -29,7 +30,7 @@ public class SaveToNasService {
             // Path destinationFile = path.resolve(
             //     Paths.get(file.getOriginalFilename()))
             //     .normalize().toAbsolutePath();
-            Files.write(path, file);
+            Files.write(path, byteBuffer.array(), StandardOpenOption.CREATE);
 
             return Mono.just(ResponseEntity.ok("File uploaded successfully"));
         } catch (IOException e) {
