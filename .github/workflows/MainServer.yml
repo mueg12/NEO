@@ -55,7 +55,7 @@ jobs:
         run: |
           cd web/back/src/main/resources
           touch keystore.p12
-          echo ${{ secrets.KEYSTORE_P12 }} | base64 --decode > keystore.p12
+          echo "${{ secrets.KEYSTORE_P12 }}" | base64 --decode > keystore.p12
 
       - name: Build Spring Boot App
         run: |
