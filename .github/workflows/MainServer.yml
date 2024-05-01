@@ -51,6 +51,9 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
+      - name: Decode .p12 File
+        run: echo ${{ secrets.KEYSTORE_P12 }} | base64 --decode > keystore.p12
+
       - name: Build Spring Boot App
         run: |
           cd web/back
@@ -69,6 +72,8 @@ jobs:
           edgeservers.memoryTotal= ${{ secrets.EDGESERVER_MEMORYTOTAL }}
           edgeservers.memoryUse= ${{ secrets.EDGESERVER_MEMORYUSE }}
           edgeserver.number= ${{ secrets.EDGESERVER_NUMBER }}
+
+          KEY_STORE_PASSWORD = ${{ secrets.KEY_STORE_PASSWORD }}
           EOT
           chmod +x ./gradlew
           ./gradlew build
