@@ -1,5 +1,11 @@
 package com.neo.back.docker.service;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -60,7 +66,7 @@ public class CloseDockerService {
                 return dockerWebClient.post()
                     .uri(uriBuilder -> uriBuilder.path("/commit")
                         .queryParam("container", dockerServer.getDockerId())
-                        .queryParam("repo", dockerServer.getServerName()) // 한글로하면 오류남
+                        // .queryParam("repo", dockerServer.getServerName()) // 한글로하면 오류남
                         //.queryParam("author", author)
                         .build())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -102,31 +108,61 @@ public class CloseDockerService {
                 this.edgeServerRepo.save(edgeServer);
 
                 saveDockerImage();
-                return Mono.just("Container close & Image create success");
+                return saveDockerImage();
             });
     }
 
     @SuppressWarnings("deprecation")
-    private Flux<Object> saveDockerImage() {
+    private Mono<String> saveDockerImage() {
+        Path dockerImagePath = Paths.get("/mnt/nas/dockerImage/test.tar");
         return dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
-            .exchange()
-            .flatMapMany(clientResponse -> clientResponse.bodyToFlux(DataBuffer.class))
-            .flatMap(dataBuffer -> {
-                return saveToNasService.saveDockerImage(dataBuffer.asByteBuffer());
-            });
-
+                .exchangeToMono(response -> {
+                    // FileChannel을 스트림 밖에서 한 번만 열기
+                    try {FileChannel channel = FileChannel.open(dockerImagePath,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.WRITE);
+                        return response.bodyToFlux(DataBuffer.class)
+                                .doOnNext(dataBuffer -> {
+                                    System.out.println("Received DataBuffer with capacity: " + dataBuffer.readableByteCount());
+                                })
+                                .flatMap(dataBuffer -> {
+                                    ByteBuffer byteBuffer = dataBuffer.asByteBuffer();
+                                    System.out.println("ByteBuffer position: " + byteBuffer.position() + ", limit: " + byteBuffer.limit());
+                                    //byteBuffer.flip();
+                                    //System.out.println("ByteBuffer position after: " + byteBuffer.position() + ", limit: " + byteBuffer.limit());
+                                    if (!byteBuffer.hasRemaining()) {
+                                        System.out.println("No data to write after flip.");
+                                    }
+                                    while (byteBuffer.hasRemaining()) {
+                                        System.out.println("Writing data...");
+                                        try {
+                                            int bytesWritten = channel.write(byteBuffer);
+                                            System.out.println("Bytes written: " + bytesWritten);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                            System.err.println("Error writing to file: " + e.getMessage());
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                    DataBufferUtils.release(dataBuffer);  // 데이터 버퍼 해제
+                                    return Mono.empty();
+                                })
+                                .then(Mono.just("Success"))
+                                .onErrorResume(e -> Mono.just("Failed to upload file: " + e.getMessage()));
+                    } catch (IOException e) {
+                        return Mono.error(e);
+                    }
+                });
     }
 
     private Mono<String> deleteLeftDockerImage() {
-        return dockerWebClient.get()
-            .uri("/images/{imageName}/get", this.imageId)
+        return dockerWebClient.delete()
+            .uri("/images/{imageName}", this.imageId)
             .retrieve()
             .bodyToMono(String.class)
             .flatMap(imageInfo -> {
-                
-
                 return Mono.just("Container close & Image create success");
             });
     }
