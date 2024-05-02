@@ -40,3 +40,4 @@ out/
 
 # /src/main/resources/static
 /src/main/resources/env.properties
+/src/main/resources/keystore.p12
