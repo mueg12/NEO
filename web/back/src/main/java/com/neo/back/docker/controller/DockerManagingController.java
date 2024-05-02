@@ -35,13 +35,6 @@ public class DockerManagingController {
     @PostMapping("/api/container/create")
     public Mono<String> createContainer(@RequestBody CreateDockerDto config) {
 
-        String propertiesContent = "game=" + config.getGame() + "\n" +
-                "ramCapacity=" + config.getRamCapacity() + "\n" +
-                "paymentSystem=" + config.getPaymentSystem() + "\n" +
-                "time=" + config.getTime();
-
-        System.out.println(propertiesContent);
-
         return createDockerService.createContainer(config);
     }
 

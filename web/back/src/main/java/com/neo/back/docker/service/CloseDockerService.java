@@ -120,9 +120,9 @@ public class CloseDockerService {
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .exchangeToMono(response -> {
                     // FileChannel을 스트림 밖에서 한 번만 열기
-                    try (FileChannel channel = FileChannel.open(dockerImagePath,
+                    try {FileChannel channel = FileChannel.open(dockerImagePath,
                             StandardOpenOption.CREATE,
-                            StandardOpenOption.WRITE)) {
+                            StandardOpenOption.WRITE);
                         return response.bodyToFlux(DataBuffer.class)
                                 .doOnNext(dataBuffer -> {
                                     System.out.println("Received DataBuffer with capacity: " + dataBuffer.readableByteCount());
@@ -130,16 +130,18 @@ public class CloseDockerService {
                                 .flatMap(dataBuffer -> {
                                     ByteBuffer byteBuffer = dataBuffer.asByteBuffer();
                                     System.out.println("ByteBuffer position: " + byteBuffer.position() + ", limit: " + byteBuffer.limit());
-                                    byteBuffer.flip();
-                                    System.out.println("ByteBuffer position after: " + byteBuffer.position() + ", limit: " + byteBuffer.limit());
+                                    //byteBuffer.flip();
+                                    //System.out.println("ByteBuffer position after: " + byteBuffer.position() + ", limit: " + byteBuffer.limit());
                                     if (!byteBuffer.hasRemaining()) {
                                         System.out.println("No data to write after flip.");
                                     }
                                     while (byteBuffer.hasRemaining()) {
                                         System.out.println("Writing data...");
                                         try {
-                                            channel.write(byteBuffer);
+                                            int bytesWritten = channel.write(byteBuffer);
+                                            System.out.println("Bytes written: " + bytesWritten);
                                         } catch (IOException e) {
+                                            e.printStackTrace();
                                             System.err.println("Error writing to file: " + e.getMessage());
                                             throw new RuntimeException(e);
                                         }
@@ -156,13 +158,11 @@ public class CloseDockerService {
     }
 
     private Mono<String> deleteLeftDockerImage() {
-        return dockerWebClient.get()
-            .uri("/images/{imageName}/get", this.imageId)
+        return dockerWebClient.delete()
+            .uri("/images/{imageName}", this.imageId)
             .retrieve()
             .bodyToMono(String.class)
             .flatMap(imageInfo -> {
-                
-
                 return Mono.just("Container close & Image create success");
             });
     }

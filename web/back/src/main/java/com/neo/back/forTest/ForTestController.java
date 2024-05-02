@@ -10,6 +10,8 @@ import com.neo.back.docker.repository.EdgeServerRepository;
 import com.neo.back.docker.service.SaveToNasService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,42 +69,4 @@ public class ForTestController {
         return ResponseEntity.ok(dataDTOList);
     }
 
-    @GetMapping("/test/save")
-    public Mono<ResponseEntity<String>> testSave() {
-        String str = "Hello, world!";  // 저장할 문자열
-
-        // 문자열을 바이트 배열로 인코딩
-        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-
-        // ByteBuffer를 생성하고 바이트 데이터를 쓴다
-        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
-        buffer.put(bytes);
-        Path rootLocation = Paths.get("/mnt/nas");
-        Path dockerImagePath = rootLocation.resolve("dockerImage");
-        try {
-            // 파일 저장 경로 생성
-            if (!Files.exists(dockerImagePath)) {
-                Files.createDirectories(dockerImagePath);
-            }
-
-            Path path = dockerImagePath.resolve("test.txt");
-
-            Files.write(path, buffer.array(), StandardOpenOption.CREATE);
-
-            return Mono.just(ResponseEntity.ok("File uploaded successfully"));
-        } catch (IOException e) {
-            return Mono.just(ResponseEntity.internalServerError().body("Failed to upload file: " + e.getMessage()));
-        }
-    }
-
-    @ExceptionHandler(StorageException.class)
-    public ResponseEntity<String> handleStorageFileNotFound(StorageException e) {
-        return ResponseEntity.notFound().build();
-    }
-
-    private static class StorageException extends RuntimeException {
-        public StorageException(String message) {
-            super(message);
-        }
-    }
 }
