@@ -22,7 +22,7 @@ public class GetMyServerListService {
         List<DockerImage> dockerImages = dockerImageRepo.findByUser(null);
 
         return dockerImages.stream()
-                            .map(image -> new MyServerListDto(image.getId(), image.getGame().getGame(), image.getServerName(), image.getDate()))
-                            .collect(Collectors.toList());
+            .map(image -> new MyServerListDto(image.getId(), image.getGame().getGame(), image.getServerName(), image.getDate()))
+            .collect(Collectors.toList());
     }
 }

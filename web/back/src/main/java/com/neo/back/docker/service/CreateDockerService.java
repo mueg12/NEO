@@ -4,11 +4,8 @@ import java.util.Map;
 import java.util.Collections;
 
 import org.json.JSONObject;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.neo.back.docker.dto.CreateDockerDto;
 import com.neo.back.docker.dto.EdgeServerInfoDto;
 import com.neo.back.docker.entity.DockerServer;
+import com.neo.back.docker.middleware.DockerAPI;
 import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
 import com.neo.back.docker.repository.GameRepository;
@@ -28,6 +26,7 @@ import reactor.core.publisher.Mono;
 @Transactional
 @RequiredArgsConstructor
 public class CreateDockerService {
+    private final DockerAPI dockerAPI;
     private final DockerServerRepository dockerRepo;
     private final EdgeServerRepository edgeRepo;
     private final GameRepository gameRepo;
@@ -61,9 +60,35 @@ public class CreateDockerService {
         );
 
         return createContainerRequest(createContainerRequest)
-            .flatMap(response -> Mono.defer(() -> {
-                return databaseReflection(config);
-            }));
+            .flatMap(response -> databaseReflection(config));
+    
+    }
+
+    public Mono<String> recreateContainer(CreateDockerDto config) {
+        DockerServer existingDocker = this.dockerRepo.findByUser(null);
+        if (existingDocker != null) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user already has an open server."));
+
+        this.edgeServer = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
+        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + this.edgeServer.getIP()+ ":2375").filter(logRequestAndResponse()).build();
+
+        // Docker 컨테이너 생성을 위한 JSON 객체 구성
+        var createContainerRequest = Map.of(
+            "Image", config.getGame(),
+            "ExposedPorts", Map.of(
+                "25565/tcp", Map.of()
+            ),
+            "HostConfig", Map.of(
+                "PortBindings", Map.of(
+                    "25565/tcp", Collections.singletonList(
+                        Map.of("HostPort", String.valueOf(edgeServer.getPortSelect()))
+                    )
+                ),
+                "Memory", config.getRamCapacity() * 1024 * 1024 * 1024
+            )
+        );
+
+        return createContainerRequest(createContainerRequest)
+            .flatMap(response -> databaseReflection(config));
     
     }
 
@@ -71,25 +96,13 @@ public class CreateDockerService {
 
 
 
-    // Docker 컨테이너 생성 요청하고 생성되면 실행 요청하고 응답 반환
+    
     private Mono<String> createContainerRequest(Map<String, Object> createContainerRequest) {
-        return dockerWebClient.post()
-            .uri("/containers/create")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(createContainerRequest))
-            .retrieve()
-            .bodyToMono(String.class)
+        return dockerAPI.createContainer(createContainerRequest, dockerWebClient)
             .flatMap(createResponse -> Mono.defer(() -> {
                 String containerId = parseContainerId(createResponse);
-                System.out.println(containerId); //테스트용
                 this.containerId = containerId;
-                // return createResponse;
-                return dockerWebClient.post()
-                        .uri("/containers/" + containerId + "/restart")
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .retrieve() // 실제 요청을 보내고 응답을 받아옵니다.
-                        .bodyToMono(Void.class) // 시작 요청에 대한 본문은 필요하지 않습니다.
-                        .thenReturn("Container started with ID: " + containerId);
+                return dockerAPI.restartContainer(containerId, dockerWebClient);         
             }));
     }
 

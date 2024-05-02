@@ -1,5 +1,6 @@
 package com.neo.back.docker.controller;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +33,12 @@ public class DockerManagingController {
         return getServerService.getMyServerList();
     }
 
+    @DeleteMapping("/api/container")
+    public List<MyServerListDto> deleteContainer() {
+
+        return getServerService.getMyServerList();
+    }
+
     @PostMapping("/api/container/create")
     public Mono<String> createContainer(@RequestBody CreateDockerDto config) {
 
@@ -41,7 +48,7 @@ public class DockerManagingController {
     @PostMapping("/api/container/recreate")
     public Mono<String> recreateContainer(@RequestBody CreateDockerDto config) {
 
-        return createDockerService.createContainer(config);
+        return createDockerService.recreateContainer(config);
     }
 
     @PutMapping("/api/container/close")
