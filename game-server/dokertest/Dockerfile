@@ -1,11 +1,14 @@
-FROM openjdk:18
+FROM alpine:3.19.1
 
-WORKDIR /
+WORKDIR /server/
 
-COPY craftbukkit-1.20.4.jar ./
+RUN apk add openjdk18-jre
 
-RUN java -jar craftbukkit-1.20.4.jar
+COPY . .
 
 RUN sed -i 's/eula=false/eula=true/g' eula.txt
 
-CMD ["java", "-Xmx2G", "-jar", "/craftbukkit-1.20.4.jar"]
+CMD ["java", "inputAndOutput.java"]
+
+
+# CMD ["java", "-Xmx2G", "-jar", "/server/craftbukkit-1.20.4.jar"]
