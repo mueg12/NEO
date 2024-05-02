@@ -22,6 +22,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,11 +77,7 @@ public class GameServerPropertyService {
                 .thenReturn("File updated and container restarted.");
     }
 
-    public GameServerSetting loadSettings() {
-        // 처음 데이터 반환하게 함.
-        // 더미 데이터 일단은 넣어두고 테스트
-        return repository.findById(1L).orElseThrow(() -> new RuntimeException("Settings not found"));
-    }
+
 
     private  Mono<Void> restartContainer(String containerId) {
         return dockerWebClient.post()
@@ -97,7 +94,19 @@ public class GameServerPropertyService {
                 .bodyToMono(String.class);
     }
 
+    public GameServerSetting loadSettings(Long UserId) {
+        // 처음 데이터 반환하게 함.
+        // 더미 데이터 일단은 넣어두고 테스트
+        Optional<GameServerSetting> settings = repository.findById(UserId);
+
+        GameServerSetting returnsettings = settings.orElse(new GameServerSetting());
+
+        return returnsettings;
+    }
+
     public String getString(GameServerSetting settings) {
+
+
         String content = Arrays.stream(GameServerSetting.class.getDeclaredFields())
                 .map(field -> formatField(field, settings))
                 .collect(Collectors.joining("\n"));

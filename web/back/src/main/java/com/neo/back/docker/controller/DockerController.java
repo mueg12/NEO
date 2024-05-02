@@ -1,7 +1,9 @@
 package com.neo.back.docker.controller;
 
+import com.neo.back.docker.dto.GameServerSettingDto;
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
+import com.neo.back.springjwt.entity.User;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -15,6 +17,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 
 @RestController
@@ -28,13 +31,24 @@ public class DockerController {
 
     }
     @PostMapping("/api/change-file")
-    public Mono<String> changeFileInContainer() throws IOException {
-        String containerId = "87e5304723d4";
+    public Mono<String> changeFileInContainer(@RequestBody GameServerSettingDto req) throws IOException {
 
-        GameServerSetting settings = service.loadSettings(); // 서비스 메소드는 적절한 로직으로 구현되어야 함
+        System.out.println(req.toString());
+
+        String dockerContainerId= req.getContainerId();
+        Long UserId = req.getUserId();
+
+        System.out.println(UserId);
+        System.out.println(dockerContainerId);
+
+         // 추후 jwt 토큰에 User 정보 담아둘 거임. 임시 코드
+
+        GameServerSetting settings = service.loadSettings(UserId); // 서비스 메소드는 적절한 로직으로 구현되어야 함
 
         // 모든 필드와 값을 가져와서 "컬럼: 값" 형식의 문자열로 변환
         String content = service.getString(settings);
+
+        System.out.println(content);
 
         // content 문자열을 바이트 배열로 변환
         byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
@@ -49,7 +63,7 @@ public class DockerController {
         Files.write(tarPath, tarFile);
 
         // Docker API를 통해 파일을 컨테이너에 복사
-        return service.ChangeFileinContainer(containerId, tarFile);
+        return service.ChangeFileinContainer(dockerContainerId, tarFile);
 
     }
 
