@@ -98,11 +98,11 @@ public class inputAndOutput {
 
                 // 파일의 한 줄을 읽어서 전체 명령어 문자열로 저장
                 String cmd = meomoryReader.readLine();
-
                 // BufferedReader 닫기
                 meomoryReader.close();
 
                 minecraftServerProcess = new ProcessBuilder(cmd.split(",")).start();
+
             } catch (IOException e) {
                 e.printStackTrace();
                 return;

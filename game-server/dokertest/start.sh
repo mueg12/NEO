@@ -1,4 +1,4 @@
-tail -f output.txt | {
+tail -n 1 -f output.txt | {
     while IFS= read -r line; do
         # echo "$line"
         if [[ "$line" == *"Done"* ]]; then
