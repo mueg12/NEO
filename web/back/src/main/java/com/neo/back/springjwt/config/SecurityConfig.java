@@ -96,26 +96,26 @@ public class SecurityConfig {
                 .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
 
         //oauth2
-  /*      http
+       http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
                                 .successHandler(customSuccessHandler)
                 );
 
-*/
-        //경로별 인가 작업
-        // http.
-        //         authorizeHttpRequests((auth)-> auth
-        //                 .requestMatchers("/api/login","/api","/api/join,/api/containers").permitAll()
-        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
-        //                 .requestMatchers("/api/**").authenticated()
-        //                 .anyRequest().permitAll());
 
-        http
+        //경로별 인가 작업
+         http.
+              authorizeHttpRequests((auth)-> auth
+                       .requestMatchers("/api/login","/api","/api/join,/api/containers").permitAll()
+                      .requestMatchers("/api/admin").hasRole("ADMIN")
+                       .requestMatchers("/api/**").authenticated()
+                     .anyRequest().permitAll());
+
+     /*   http
                 .authorizeHttpRequests((auth) -> auth
                         .anyRequest().permitAll());
-
+*/
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         //addfilterAt 원하는 자리에 등록, usernameauthentication 대체하는거이기에 at
         http
