@@ -6,6 +6,10 @@ RUN apk add openjdk18-jre
 
 COPY . .
 
+RUN chmod +x start.sh
+
+RUN chmod +x stop.sh
+
 RUN java -jar craftbukkit-1.20.4.jar 
 
 RUN sed -i 's/eula=false/eula=true/g' eula.txt

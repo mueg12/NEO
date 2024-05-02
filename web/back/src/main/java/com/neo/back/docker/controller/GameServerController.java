@@ -3,7 +3,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.neo.back.docker.dto.FileDataDto;
+import com.neo.back.docker.dto.StartGameServerDto;
 import com.neo.back.docker.service.GameDataService;
+import com.neo.back.docker.service.StartAndStopGameServerService;
 
 import reactor.core.publisher.Mono;
 
@@ -14,9 +16,11 @@ import java.util.List;
 public class GameServerController {
 
     private final GameDataService gameDataService;
+    private final StartAndStopGameServerService startAndStopGameServerService;
 
-    public GameServerController(GameDataService gameDataService) {
+    public GameServerController(GameDataService gameDataService,StartAndStopGameServerService startAndStopGameServerService) {
         this.gameDataService = gameDataService;
+        this.startAndStopGameServerService = startAndStopGameServerService;
     }
 
     @GetMapping("/api/docker-file-list")
@@ -26,13 +30,17 @@ public class GameServerController {
         return ResponseEntity.ok(fileList);
     }
 
-    @PutMapping("api/server/start")
-    public Mono<String> serverStart() {
-        return Mono.just("start success");
+    @GetMapping("api/server/start")
+    public ResponseEntity<StartGameServerDto> serverStart() {
+        StartGameServerDto startMes =  startAndStopGameServerService.getStartGameServer();
+        System.out.println(startMes.getIsWorking());
+        return ResponseEntity.ok(startMes);
     }
 
-    @PutMapping("api/server/stop")
+    @GetMapping("api/server/stop")
     public Mono<String> serverStop() {
+        StartGameServerDto startMes =  startAndStopGameServerService.getStopGameServer();
+        System.out.println(startMes.getIsWorking());
         return Mono.just("stop success");
     }
 
