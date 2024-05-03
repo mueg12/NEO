@@ -85,12 +85,12 @@ public class CloseDockerService {
                 e.printStackTrace();
             }
         }
-        Path Path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + /*dockerServer.getUser().getId() +*/ ".tar");
+        Path path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + /*dockerServer.getUser().getId() +*/ ".tar");
         return this.dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
             .exchangeToMono(response -> {
-                try {FileChannel channel = FileChannel.open(Path,
+                try {FileChannel channel = FileChannel.open(path,
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE);
                     return response.bodyToFlux(DataBuffer.class)
