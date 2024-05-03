@@ -14,8 +14,9 @@ public class testDockerServerDto {
     String dockerId;
     int ram;
     String game;
+    String baseImage;
 
-    public testDockerServerDto(Long id, Long id1, String serverName, String edgeServerName, int port, String dockerId, int ramCapacity, String game) {
+    public testDockerServerDto(Long id, Long id1, String serverName, String edgeServerName, int port, String dockerId, int ramCapacity, String game, String baseImage) {
         this.id = id;
         this.serverName = serverName;
         this.edgeServer = edgeServerName;
@@ -23,5 +24,6 @@ public class testDockerServerDto {
         this.dockerId = dockerId;
         this.ram = ramCapacity;
         this.game = game;
+        this.baseImage = baseImage;
     }
 }

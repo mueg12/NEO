@@ -60,11 +60,11 @@ public class CloseDockerService {
 
 
     private Mono<String> stopContainerRequest(DockerServer dockerServer) {
-        return dockerAPI.stopContainer(dockerServer.getDockerId(), dockerWebClient);
+        return this.dockerAPI.stopContainer(dockerServer.getDockerId(), this.dockerWebClient);
     }
 
     private Mono<String> makeIamgeRequest(DockerServer dockerServer) {
-        return dockerAPI.commitContainer(dockerServer.getDockerId(), dockerWebClient)
+        return this.dockerAPI.commitContainer(dockerServer.getDockerId(), this.dockerWebClient)
             .flatMap(commitResponse -> {
                 String imageId = parseImageId(commitResponse);
                 this.imageId = imageId;
@@ -73,7 +73,7 @@ public class CloseDockerService {
     }
 
     private Mono<String> deleteContainerRequest(DockerServer dockerServer) {
-        return dockerAPI.deleteContainer(dockerServer.getDockerId(), dockerWebClient);
+        return this.dockerAPI.deleteContainer(dockerServer.getDockerId(), this.dockerWebClient);
     }
 
     private Mono<String> saveDockerImage(DockerServer dockerServer) {
@@ -86,7 +86,7 @@ public class CloseDockerService {
             }
         }
         Path Path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + /*dockerServer.getUser().getId() +*/ ".tar");
-        return dockerWebClient.get()
+        return this.dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
             .exchangeToMono(response -> {
@@ -112,9 +112,15 @@ public class CloseDockerService {
     }
 
     private Mono<String> databaseReflection(DockerServer dockerServer) {
-        return dockerAPI.getImageInfo(this.imageId, dockerWebClient)
+        return this.dockerAPI.getImageInfo(this.imageId, this.dockerWebClient)
             .flatMap(response -> {
-                DockerImage dockerImage = new DockerImage();
+                DockerImage dockerImage;
+                if (dockerServer.getBaseImage() != null) {
+                    dockerImage = dockerImageRepo.findByImageId(dockerServer.getBaseImage());
+                } else {
+                    dockerImage = new DockerImage();
+                } 
+                
                 dockerImage.setServerName(dockerServer.getServerName());
                 dockerImage.setUser(dockerServer.getUser());
                 dockerImage.setImageId(this.imageId);
@@ -135,7 +141,7 @@ public class CloseDockerService {
     }
 
     private Mono<String> deleteLeftDockerImage() {
-        return dockerAPI.deleteImage(this.imageId, dockerWebClient);
+        return this.dockerAPI.deleteImage(this.imageId, this.dockerWebClient);
     }
 
     @SuppressWarnings("deprecation")

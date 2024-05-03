@@ -11,4 +11,5 @@ import com.neo.back.springjwt.entity.User;
 @Repository
 public interface DockerImageRepository extends JpaRepository<DockerImage, Long> {
     List<DockerImage> findByUser(User user);
+    DockerImage findByImageId(String imageId);
 }

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.neo.back.docker.entity.Game;
 
 @Repository
-public interface GameRepository extends JpaRepository<Game, String> {
-    Game findByGame(String game);
+public interface GameRepository extends JpaRepository<Game, Long> {
+    Game findByGameNameAndVersion(String gameName, String version);
 }

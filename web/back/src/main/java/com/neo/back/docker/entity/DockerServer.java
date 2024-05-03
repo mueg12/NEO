@@ -26,6 +26,8 @@ public class DockerServer {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String baseImage;
+
     @ManyToOne
     @JoinColumn(name = "edgeServerName")
     private EdgeServer edgeServer;

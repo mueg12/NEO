@@ -7,7 +7,11 @@ import lombok.Setter;
 @Setter
 public class CreateDockerDto {
 
-    private String game;
+    private String gameName;
+
+    private String version;
+
+    private Long imageNum;
 
     private String serverName;
 
@@ -15,6 +19,8 @@ public class CreateDockerDto {
 
     private String paymentSystem;
 
-    private String time;
+    private int time;
+
+    private String baseImage;
 
 }

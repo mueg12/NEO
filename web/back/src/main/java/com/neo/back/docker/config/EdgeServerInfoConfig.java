@@ -43,14 +43,17 @@ public class EdgeServerInfoConfig {
         }
 
         Game game = new Game();
-        game.setGame("mc1.16.5");
+        game.setGameName("Minecreft");
+        game.setVersion("1.16.5");
         game.setDockerImage("mc1.16.5");
         game.setDefaultSetting(null);
         gameRepo.save(game);
-        game.setGame("mc1.19.2");
+        game.setGameName("Minecreft");
+        game.setVersion("1.19.2");
         game.setDockerImage("mc1.19.2");
         gameRepo.save(game);
-        game.setGame("mc1.20.4");
+        game.setGameName("Minecreft");
+        game.setVersion("1.20.4");
         game.setDockerImage("mc1.20.4");
         gameRepo.save(game);
 	}

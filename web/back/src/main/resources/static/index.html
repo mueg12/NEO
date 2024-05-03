@@ -67,11 +67,17 @@
 <body>
 
     <form id="gameForm">
-        <label for="game">게임 종류:</label>
-        <select id="game">
-            <option value="mc1.16.5">마인크래프트 1.16.5</option>
-            <option value="mc1.19.2">마인크래프트 1.19.2</option>
-            <option value="mc1.20.4">마인크래프트 1.20.4</option>
+        <label for="gameName">게임 종류:</label>
+        <select id="gameName">
+            <option value="Minecreft">마인크래프트</option>
+        </select>
+        <br>
+
+        <label for="version">게임 버전:</label>
+        <select id="version">
+            <option value="1.16.5">1.16.5</option>
+            <option value="1.19.2">1.19.2</option>
+            <option value="1.20.4">1.20.4</option>
         </select>
         <br>
 
@@ -97,9 +103,9 @@
 
         <label for="time">시간:</label>
         <select id="time">
-            <option value="1hour">1시간</option>
-            <option value="2hours">2시간</option>
-            <option value="3hours">3시간</option>
+            <option value=1>1시간</option>
+            <option value=2>2시간</option>
+            <option value=3>3시간</option>
         </select>
         <br>
 
@@ -112,14 +118,16 @@
 
 <script>
     function submitForm() {
-        const game = document.getElementById('game').value;
+        const gameName = document.getElementById('gameName').value;
+        const version = document.getElementById('version').value;
         const serverName = document.getElementById('serverName').value;
         const ramCapacity = document.getElementById('ramCapacity').value;
         const paymentSystem = document.getElementById('paymentSystem').value;
         const time = document.getElementById('time').value;
 
         const formData = {
-            game,
+            gameName,
+            version,
             serverName,
             ramCapacity,
             paymentSystem,

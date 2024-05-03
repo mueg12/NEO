@@ -8,13 +8,15 @@ import lombok.Setter;
 public class MyServerListDto {
     Long dockerId;
 
-    String game;
+    String gameName;
+    String version;
     String serverName;
     String date;
     
-    public MyServerListDto(Long dockerId, String game, String serverName, String date) {
+    public MyServerListDto(Long dockerId, String gameName, String version, String serverName, String date) {
         this.dockerId = dockerId;
-        this.game = game;
+        this.gameName = gameName;
+        this.version = version;
         this.serverName = serverName;
         this.date = date;
     }

@@ -1,13 +1,18 @@
 package com.neo.back.docker.middleware;
 
 import java.util.Map;
+import java.util.List;
 
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -83,9 +88,33 @@ public class DockerAPI {
     //         .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     // }
 
+    public Mono<String> loadImage(List<DataBuffer> dataBuffer, WebClient dockerWebClient) {
+        return dockerWebClient.post()
+            .uri("/images/load") // Docker 이미지 로드 API
+            .contentType(MediaType.valueOf("application/x-tar"))
+            .body(BodyInserters.fromDataBuffers(Flux.fromIterable(dataBuffer)))
+            .retrieve()
+            .bodyToMono(String.class)
+            .then(Mono.just("Load image success"));
+    }
+
     public Mono<String> deleteImage(String imageId, WebClient dockerWebClient) {
         return dockerWebClient.delete()
             .uri("/images/{imageName}", imageId)
+            .retrieve()
+            .bodyToMono(String.class);
+    }
+
+    public Mono<String> getContainerList(WebClient dockerWebClient) {
+        return dockerWebClient.get()
+            .uri("/containers/json")
+            .retrieve()
+            .bodyToMono(String.class);
+    }
+
+    public Mono<String> getImageList(String imageId, WebClient dockerWebClient) {
+        return dockerWebClient.get()
+            .uri("/images/json")
             .retrieve()
             .bodyToMono(String.class);
     }
