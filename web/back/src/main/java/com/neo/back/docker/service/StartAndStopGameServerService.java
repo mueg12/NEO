@@ -3,6 +3,7 @@ package com.neo.back.docker.service;
 import java.io.Serializable;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -17,15 +18,11 @@ import com.neo.back.docker.repository.DockerServerRepository;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class StartAndStopGameServerService {
-        private final DockerServerRepository dockerServerRepo;
+    private final DockerServerRepository dockerServerRepo;
     private final WebClient.Builder webClientBuilder;
     private WebClient dockerWebClient;
-
-    public StartAndStopGameServerService(WebClient.Builder webClientBuilder, DockerServerRepository dockerServerRepo) {
-        this.dockerServerRepo = dockerServerRepo;
-        this.webClientBuilder = webClientBuilder;
-    }
     
     public ExchangeFilterFunction logRequestAndResponse() {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
