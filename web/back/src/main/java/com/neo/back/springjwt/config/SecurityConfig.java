@@ -121,10 +121,11 @@ public class SecurityConfig {
          http.
               authorizeHttpRequests((auth)-> auth
 
-//                       .requestMatchers("/login","/","/api/join").permitAll()
-//                      .requestMatchers("/api/admin").hasRole("ADMIN")
-//                      .requestMatchers("/reissue").permitAll()
-                       .anyRequest().authenticated());
+//               .requestMatchers("/login","/","/api/join").permitAll()
+//               .requestMatchers("/api/admin").hasRole("ADMIN")
+//               .requestMatchers("/reissue").permitAll()
+//               .anyRequest().authenticated());
+               .anyRequest().permitAll());
 
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
