@@ -1,10 +1,12 @@
 package com.neo.back.springjwt.config;
 
 
+import com.neo.back.springjwt.jwt.CustomLogoutFilter;
 import com.neo.back.springjwt.jwt.JWTFilter;
 import com.neo.back.springjwt.jwt.JWTUtil;
 import com.neo.back.springjwt.jwt.LoginFilter;
 import com.neo.back.springjwt.oauth2.CustomSuccessHandler;
+import com.neo.back.springjwt.repository.RefreshRepository;
 import com.neo.back.springjwt.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -32,11 +35,15 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
+
+    private final RefreshRepository refreshRepository;
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
         this.authenticationConfiguration=authenticationConfiguration;
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
+
     }
 
     //AuthenticationManager Bean 등록
@@ -91,6 +98,11 @@ public class SecurityConfig {
         http.
                 httpBasic((auth) -> auth.disable());
 
+        //http 로그아웃 방식 disable
+
+        http
+                .logout((auth)->auth.disable());
+
         //JWTFilter 등록
         http
                 .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
@@ -100,26 +112,28 @@ public class SecurityConfig {
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
-                                .successHandler(customSuccessHandler)
-                );
+                                .successHandler(customSuccessHandler));
+
+
 
 
         //경로별 인가 작업
          http.
               authorizeHttpRequests((auth)-> auth
-                       .requestMatchers("/api/login","/api","/api/join,/api/containers").permitAll()
+                       .requestMatchers("/login","/","/api/join").permitAll()
                       .requestMatchers("/api/admin").hasRole("ADMIN")
-                       .requestMatchers("/api/**").authenticated()
-                     .anyRequest().permitAll());
+                      .requestMatchers("/reissue").permitAll()
+                       .anyRequest().authenticated());
 
-     /*   http
-                .authorizeHttpRequests((auth) -> auth
-                        .anyRequest().permitAll());
-*/
+
+
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         //addfilterAt 원하는 자리에 등록, usernameauthentication 대체하는거이기에 at
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
         //세션 설정 stateless로 설정
         http
@@ -134,8 +148,6 @@ public class SecurityConfig {
         // 세션 고정 보호
         http.sessionManagement((auth)-> auth
                 .sessionFixation().changeSessionId());
-
-
 
 
 

@@ -1,7 +1,8 @@
 package com.neo.back.springjwt.jwt;
 
 import com.neo.back.springjwt.dto.CustomUserDetails;
-import com.neo.back.springjwt.entity.User;
+import com.neo.back.springjwt.entity.UserEntity;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -37,21 +39,41 @@ public class JWTFilter extends OncePerRequestFilter {
 
         System.out.println("Authorization now");
         //Beare 부분 제거 후 순수 토큰만 획득
-        String token = authorization.split(" ")[1];
+        String access = authorization.split(" ")[1];
 
         //토큰 소멸 시간 검증
-        if(jwtUtil.isExpired(token)){
-            System.out.println("token expired");
-            filterChain.doFilter(request,response);
+        try {jwtUtil.isExpired(access);
+        }  catch (ExpiredJwtException e){
+
+            //response body
+            PrintWriter writer = response.getWriter();
+            writer.print("access token expired");
+
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+          //  filterChain.doFilter(request,response);
 
             return;
         }
 
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
+        String category = jwtUtil.getCategory(access);
+
+        if (!category.equals("access")) {
+
+            //response body
+            PrintWriter writer = response.getWriter();
+            writer.print("invalid access token");
+
+            //response status code
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        String username = jwtUtil.getUsername(access);
+        String role = jwtUtil.getRole(access);
 
         //UserEntity를 생성하여 값 set
-        User userEntity = new User();
+        UserEntity userEntity = new UserEntity();
         userEntity.setUsername(username);
         //임시 비밀번호, 검증할때마다 db에 요청 x
         userEntity.setPassword("temppassword");

@@ -3,9 +3,7 @@ package com.neo.back.docker.controller;
 import com.neo.back.docker.dto.GameServerSettingDto;
 import com.neo.back.docker.entity.GameServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
-import com.neo.back.springjwt.entity.User;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +15,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 
 @RestController
@@ -67,7 +64,6 @@ public class DockerController {
 
     }
 
-
     @GetMapping("/api/get-file")
     public Mono<String> getFileFromContainer() {
         String containerId = "87e5304723d4";
@@ -76,8 +72,6 @@ public class DockerController {
         // Docker 컨테이너로부터 파일 받아오기
         return service.getDockerContainerFile(containerId, filePathInContainer);
     }
-
-
 
     @GetMapping("/api/get-minecraftproperties")
     public Object GetMinecraftPropertiesFromContainer(){

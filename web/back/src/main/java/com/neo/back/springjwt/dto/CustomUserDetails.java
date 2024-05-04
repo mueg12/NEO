@@ -1,6 +1,6 @@
 package com.neo.back.springjwt.dto;
 
-import com.neo.back.springjwt.entity.User;
+import com.neo.back.springjwt.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,9 +10,9 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
 
-    private final User user;
+    private final UserEntity user;
 
-    public CustomUserDetails(User user) {
+    public CustomUserDetails(UserEntity user) {
         this.user = user;
     }
 
@@ -21,13 +21,7 @@ public class CustomUserDetails implements UserDetails {
 
         Collection<GrantedAuthority> collection = new ArrayList<>();
 
-        collection.add(new GrantedAuthority(){
-            @Override
-            public String getAuthority(){
-
-                return user.getRole();
-            }
-        });
+        collection.add((GrantedAuthority) () -> user.getRole());
 
 
         return collection;
@@ -40,7 +34,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        System.out.println("getusernamecalled");
         return user.getUsername();
     }
 

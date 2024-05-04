@@ -12,10 +12,9 @@ import java.util.Collection;
 import java.util.Iterator;
 
 @Controller
-@ResponseBody
 public class MainController {
 
-    @GetMapping("/api")
+    @GetMapping("/home")
     public String mainP(){
 
         //세션 정보 확인
@@ -28,7 +27,8 @@ public class MainController {
         GrantedAuthority auth = iter.next();
         String role = auth.getAuthority();
 
-        return "Main Controller " + name + role;
+        return "home";
     }
+
 
 }

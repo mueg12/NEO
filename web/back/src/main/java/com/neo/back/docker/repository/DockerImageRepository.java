@@ -5,10 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import com.neo.back.docker.entity.DockerImage;
 import java.util.List;
-import com.neo.back.springjwt.entity.User;
+import com.neo.back.springjwt.entity.UserEntity;
 
 
 @Repository
 public interface DockerImageRepository extends JpaRepository<DockerImage, Long> {
-    List<DockerImage> findByUser(User user);
+    List<DockerImage> findByUser(UserEntity user);
 }
