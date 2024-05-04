@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,10 +27,10 @@ public class inputAndOutput {
                 Boolean exit = false;
                 String[] parts;
                 while (!exit) {
-                    BufferedReader inputReader = new BufferedReader(new FileReader("input.txt"));
+                    BufferedReader inputReader = new BufferedReader(new FileReader("/control/input.txt"));
                     while (!(input = inputReader.lines()
                                 .collect(Collectors.joining("\n"))).equals("")) {
-                        FileWriter fileWriter = new FileWriter("input.txt");
+                        FileWriter fileWriter = new FileWriter("/control/input.txt");
                         fileWriter.close();
                         if (input == null)continue;
                         System.out.println("input : " + input);
@@ -94,14 +95,14 @@ public class inputAndOutput {
             Process minecraftServerProcess;
 
             try {
-                BufferedReader meomoryReader = new BufferedReader(new FileReader("meomory.txt"));
+                BufferedReader meomoryReader = new BufferedReader(new FileReader("/control/meomory.txt"));
 
                 // 파일의 한 줄을 읽어서 전체 명령어 문자열로 저장
                 String cmd = meomoryReader.readLine();
                 // BufferedReader 닫기
                 meomoryReader.close();
 
-                minecraftServerProcess = new ProcessBuilder(cmd.split(",")).start();
+                minecraftServerProcess = new ProcessBuilder(cmd.split(",")).directory(new File("/server/")).start();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -134,7 +135,7 @@ public class inputAndOutput {
                         if("stop".equals(parts[1])){
                             System.out.println("stop in manage");
                             // 특정 배쉬를 실행해서 끝나고 난 뒤에 이 뒤에 코드를 실행하기
-                            Process checkEnd = new ProcessBuilder("sh","./stop.sh").start();
+                            Process checkEnd = new ProcessBuilder("sh","./control/stop.sh").start();
 
                             // 외부 프로세스의 출력을 읽어오기 위한 BufferedReader 생성
                             BufferedReader reader = new BufferedReader(new InputStreamReader(checkEnd.getInputStream()));
@@ -182,7 +183,7 @@ public class inputAndOutput {
 
         @Override
         public void run() {
-            try(BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"))){
+            try(BufferedWriter writer = new BufferedWriter(new FileWriter("/control/output.txt"))){
                 while (outputFlag.get()) {
                     if (serverOutput.ready()) {
                         String line;

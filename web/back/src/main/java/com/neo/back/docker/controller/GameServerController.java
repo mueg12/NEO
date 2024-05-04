@@ -38,10 +38,10 @@ public class GameServerController {
     }
 
     @GetMapping("api/server/stop")
-    public Mono<String> serverStop() {
-        StartGameServerDto startMes =  startAndStopGameServerService.getStopGameServer();
-        System.out.println(startMes.getIsWorking());
-        return Mono.just("stop success");
+    public ResponseEntity<StartGameServerDto> serverStop() {
+        StartGameServerDto stopMes =  startAndStopGameServerService.getStopGameServer();
+        System.out.println(stopMes.getIsWorking());
+        return ResponseEntity.ok(stopMes);
     }
 
 }

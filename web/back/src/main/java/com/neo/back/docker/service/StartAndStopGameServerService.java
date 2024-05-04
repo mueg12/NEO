@@ -83,7 +83,7 @@ public class StartAndStopGameServerService {
         StartGameServerDto startGameServerDto = new StartGameServerDto();
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();
         
-        String[] setMeoStr = new String[]{"sh","-c","echo 'java,-Xmx" + memory + "G,-jar,/server/craftbukkit-1.20.4.jar' >  meomory.txt"};
+        String[] setMeoStr = new String[]{"sh","-c","echo 'java,-Xmx" + memory + "G,-jar,/server/craftbukkit-1.20.4.jar' >  /control/meomory.txt"};
         //nohup java -Xmx2G -jar craftbukkit-1.20.4.jar &
         var setMeo = Map.of(
             "AttachStdin", false,
@@ -101,7 +101,7 @@ public class StartAndStopGameServerService {
 
         execCmd(parseExecInstanceId(setMeoMesInst.block())).block();
 
-        String[] startStr = new String[]{"sh","-c","echo 'start' > input.txt"};
+        String[] startStr = new String[]{"sh","-c","echo 'start' > /control/input.txt"};
         //nohup java -Xmx2G -jar craftbukkit-1.20.4.jar &
         var startGameServer = Map.of(
             "AttachStdin", false,
@@ -118,7 +118,7 @@ public class StartAndStopGameServerService {
         }));
         execCmd(parseExecInstanceId(startInst.block())).block();
 
-        String[] startAck = new String[]{"sh","-c","/server/start.sh"};
+        String[] startAck = new String[]{"sh","-c","/control/start.sh"};
         var startackIns = Map.of(
             "AttachStdin", false,
             "AttachStdout", true,
@@ -143,11 +143,10 @@ public class StartAndStopGameServerService {
         DockerServer dockerServer = dockerServerRepo.findByUser(null);
         String ip = dockerServer.getEdgeServer().getIp();
         String dockerId = dockerServer.getDockerId();
-        int memory = dockerServer.getRAMCapacity();
         StartGameServerDto startGameServerDto = new StartGameServerDto();
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();
 
-        String[] stopStr = new String[]{"sh","-c","echo 'input stop' > input.txt"};
+        String[] stopStr = new String[]{"sh","-c","echo 'input stop' > /control/input.txt"};
         //nohup java -Xmx2G -jar craftbukkit-1.20.4.jar &
         var stopGameServer = Map.of(
             "AttachStdin", false,
@@ -164,7 +163,7 @@ public class StartAndStopGameServerService {
         }));
         execCmd(parseExecInstanceId(stopInst.block())).block();
 
-        String[] stopAck = new String[]{"sh","-c","/server/stop.sh"};
+        String[] stopAck = new String[]{"sh","-c","/control/stop.sh"};
         var stopAckIns = Map.of(
             "AttachStdin", false,
             "AttachStdout", true,

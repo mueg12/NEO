@@ -4,17 +4,25 @@ WORKDIR /server/
 
 RUN apk add openjdk18-jre
 
-COPY . .
+COPY craftbukkit-1.20.4.jar /server/
 
-RUN chmod +x start.sh
+COPY inputAndOutput.java /control/
+COPY input.txt /control/
+COPY output.txt /control/
+COPY meomory.txt /control/
+COPY stop.sh /control/
+COPY start.sh /control/
 
-RUN chmod +x stop.sh
+RUN chmod +x /control/start.sh
+RUN chmod +x /control/stop.sh
 
-RUN java -jar craftbukkit-1.20.4.jar 
+RUN java -jar /server/craftbukkit-1.20.4.jar 
 
-RUN sed -i 's/eula=false/eula=true/g' eula.txt
+RUN sed -i 's/eula=false/eula=true/g' /server/eula.txt
 
-CMD ["java", "inputAndOutput.java"]
+WORKDIR /
+
+CMD ["java", "/control/inputAndOutput.java"]
 
 
 # CMD ["java", "-Xmx2G", "-jar", "/server/craftbukkit-1.20.4.jar"]
