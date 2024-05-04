@@ -117,4 +117,21 @@ public class DockerAPI {
             .bodyToMono(String.class);
     }
 
+    @SuppressWarnings("rawtypes")
+    public Mono<Map> makeExec(String containerId, Map<String, Object> requestMap, WebClient dockerWebClient) {
+        return dockerWebClient.post()
+            .uri("/containers/{id}/exec", containerId)
+            .bodyValue(requestMap)
+            .retrieve()
+            .bodyToMono(Map.class);
+    }
+
+    public Mono<String> startExec(String execId, Map<String, Boolean> startExecRequest, WebClient dockerWebClient) {
+        return dockerWebClient.post()
+            .uri("/exec/{id}/start", execId)
+            .bodyValue(startExecRequest)
+            .retrieve()
+            .bodyToMono(String.class);
+    }
+
 }

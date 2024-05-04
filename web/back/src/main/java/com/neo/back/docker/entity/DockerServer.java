@@ -40,10 +40,6 @@ public class DockerServer {
     @JoinColumn(name = "game")
     private Game game;
 
-    @OneToOne
-    @JoinColumn
-    private GameServerSetting setting;
-
     private String serverComment;
 
 }

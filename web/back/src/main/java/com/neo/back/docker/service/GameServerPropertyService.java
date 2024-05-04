@@ -1,13 +1,24 @@
 package com.neo.back.docker.service;
 
-import com.neo.back.docker.entity.GameServerSetting;
-import com.neo.back.docker.repository.GameServerSettingRepository;
+import com.neo.back.docker.entity.DockerServer;
+import com.neo.back.docker.entity.MinecreftServerSetting;
+import com.neo.back.docker.middleware.DockerAPI;
+import com.neo.back.docker.repository.DockerServerRepository;
+import com.neo.back.docker.repository.MinecreftServerSettingRepository;
+import com.neo.back.docker.utility.MakeWebClient;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
+
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayOutputStream;
@@ -26,43 +37,41 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class GameServerPropertyService {
 
-    private final WebClient dockerWebClient;
+    private final MinecreftServerSettingRepository MinecreftServerSettingrepo;
+    private final DockerServerRepository dockerServerRepo;
+    private final MakeWebClient makeWebClient;
+    private final DockerAPI dockerAPI;
+    private WebClient dockerWebClient;
 
-    private final GameServerSettingRepository repository;
-
-    public GameServerPropertyService(WebClient.Builder webClientBuilder, GameServerSettingRepository repository) {
-        this.dockerWebClient = webClientBuilder.baseUrl("http://외부ip:2375").
-                filter(logRequestAndResponse()) // 로깅 필터를 여기에 추가
-                .build();
-        this.repository = repository;
-    }
-
-    public GameServerSetting save(GameServerSetting property) {
-        return repository.save(property);
+    public MinecreftServerSetting save(MinecreftServerSetting property) {
+        return MinecreftServerSettingrepo.save(property);
     }
 
     public Mono<String> executeCommand(String containerId, String command) {
-        // Exec 인스턴스 생성
-        return dockerWebClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/containers/{id}/exec").build(containerId))
-                .bodyValue(Map.of(
-                        "AttachStdout", true,
-                        "AttachStderr", true,
-                        "Cmd", List.of("/bin/sh", "-c", command)
-                ))
-                .retrieve()
-                .bodyToMono(Map.class)
+        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+        if (dockerServer == null) {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
+        }
+        this.dockerWebClient = this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
+        
+        var createExecRequest = Map.of(
+            "AttachStdout", true,
+            "AttachStderr", true,
+            "Cmd", List.of("/bin/sh", "-c", command)
+        );
+
+        var startExecRequest = Map.of("Detach", false, "Tty", false);
+
+        return this.dockerAPI.makeExec(containerId, createExecRequest, this.dockerWebClient)
                 .flatMap(execCreationResponse -> {
                     String execId = (String) execCreationResponse.get("Id");
 
                     // Exec 시작 및 결과 수집
-                    return dockerWebClient.post()
-                            .uri("/exec/{id}/start", execId)
-                            .bodyValue(Map.of("Detach", false, "Tty", false))
-                            .retrieve()
-                            .bodyToMono(String.class); // 실행 결과를 String으로 반환
+                    return this.dockerAPI.startExec(execId, startExecRequest, this.dockerWebClient);
                 });
     }
 
@@ -94,20 +103,20 @@ public class GameServerPropertyService {
                 .bodyToMono(String.class);
     }
 
-    public GameServerSetting loadSettings(Long UserId) {
+    public MinecreftServerSetting loadSettings(Long UserId) {
         // 처음 데이터 반환하게 함.
         // 더미 데이터 일단은 넣어두고 테스트
-        Optional<GameServerSetting> settings = repository.findById(UserId);
+        Optional<MinecreftServerSetting> settings = MinecreftServerSettingrepo.findById(UserId);
 
-        GameServerSetting returnsettings = settings.orElse(new GameServerSetting());
+        MinecreftServerSetting returnsettings = settings.orElse(new MinecreftServerSetting());
 
         return returnsettings;
     }
 
-    public String getString(GameServerSetting settings) {
+    public String getString(MinecreftServerSetting settings) {
 
 
-        String content = Arrays.stream(GameServerSetting.class.getDeclaredFields())
+        String content = Arrays.stream(MinecreftServerSetting.class.getDeclaredFields())
                 .map(field -> formatField(field, settings))
                 .collect(Collectors.joining("\n"));
         return content;
@@ -143,7 +152,7 @@ public class GameServerPropertyService {
         }
     }
 
-    private String formatField(Field field, GameServerSetting settings) {
+    private String formatField(Field field, MinecreftServerSetting settings) {
         try {
             field.setAccessible(true); // private 필드에 접근할 수 있도록 설정
             String fieldName = field.getName().replace('_', '-');
@@ -153,18 +162,6 @@ public class GameServerPropertyService {
         } catch (IllegalAccessException e) {
             return field.getName() + ": error accessing value";
         }
-    }
-
-    public ExchangeFilterFunction logRequestAndResponse() {
-        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            System.out.println("Request: " + clientRequest.method() + " " + clientRequest.url());
-            clientRequest.headers().forEach((name, values) -> values.forEach(value -> System.out.println(name + ": " + value)));
-            return Mono.just(clientRequest);
-        }).andThen(ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            System.out.println("Response: Status code " + clientResponse.statusCode());
-            clientResponse.headers().asHttpHeaders().forEach((name, values) -> values.forEach(value -> System.out.println(name + ": " + value)));
-            return Mono.just(clientResponse);
-        }));
     }
 
 }

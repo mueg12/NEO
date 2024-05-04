@@ -24,5 +24,5 @@ public class Game {
 
     @ManyToOne
     @JoinColumn
-    private GameServerSetting defaultSetting; 
+    private MinecreftServerSetting defaultSetting; 
 }

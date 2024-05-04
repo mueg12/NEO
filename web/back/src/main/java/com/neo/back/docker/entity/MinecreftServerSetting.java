@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class GameServerSetting {
+public class MinecreftServerSetting {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -58,7 +58,7 @@ public class GameServerSetting {
     private Boolean white_list = false;
 
     // 기본 생성자
-    public GameServerSetting() {
+    public MinecreftServerSetting() {
     }
 
     // Getters and Setters

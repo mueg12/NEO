@@ -36,9 +36,9 @@ public class UserServerListService {
         try {
             Files.delete(path);
             dockerImageRepo.deleteById(dockerNum);
-            return Mono.just("Make image success");
+            return Mono.just("Delete image success");
         } catch (Exception e) {
-            return Mono.error(new NoSuchFileException("Make image success"));
+            return Mono.error(new NoSuchFileException("Delete image fail"));
         }
     }
 

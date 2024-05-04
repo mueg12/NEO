@@ -11,7 +11,6 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,6 +24,7 @@ import com.neo.back.docker.repository.DockerImageRepository;
 import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
 import com.neo.back.docker.repository.GameRepository;
+import com.neo.back.docker.utility.MakeWebClient;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +40,8 @@ public class CreateDockerService {
     private final DockerImageRepository imageRepo;
     private final GameRepository gameRepo;
     private final SelectEdgeServerService selectEdgeServerService;
+    private final MakeWebClient makeWebClient;
     private WebClient dockerWebClient;
-    private final WebClient.Builder webClientBuilder;
     private EdgeServerInfoDto edgeServerInfo;
     private String containerId;
 
@@ -50,7 +50,7 @@ public class CreateDockerService {
         if (existingDocker != null) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user already has an open server."));
         
         this.edgeServerInfo = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
-        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + this.edgeServerInfo.getIP()+ ":2375").filter(logRequestAndResponse()).build();
+        this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(this.edgeServerInfo.getIP());
 
         Game game = gameRepo.findByGameNameAndVersion(config.getGameName(), config.getVersion());
 
@@ -81,7 +81,7 @@ public class CreateDockerService {
 
         Optional<DockerImage> dockerImage = this.imageRepo.findById(config.getImageNum());
         this.edgeServerInfo = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
-        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + this.edgeServerInfo.getIP()+ ":2375").filter(logRequestAndResponse()).build();
+        this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(this.edgeServerInfo.getIP());
 
         // Docker 컨테이너 생성을 위한 JSON 객체 구성
         var createContainerRequest = Map.of(
@@ -155,17 +155,5 @@ public class CreateDockerService {
         return jsonObject.getString("Id");
     }
 
-    // 요청과 응답을 로깅하는 ExchangeFilterFunction
-    private ExchangeFilterFunction logRequestAndResponse() {
-        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
-            System.out.println("Request: " + clientRequest.method() + " " + clientRequest.url());
-            clientRequest.headers().forEach((name, values) -> values.forEach(value -> System.out.println(name + ": " + value)));
-            return Mono.just(clientRequest);
-        }).andThen(ExchangeFilterFunction.ofResponseProcessor(clientResponse -> {
-            System.out.println("Response: Status code " + clientResponse.statusCode());
-            clientResponse.headers().asHttpHeaders().forEach((name, values) -> values.forEach(value -> System.out.println(name + ": " + value)));
-            return Mono.just(clientResponse);
-        }));
-    }
 }
 

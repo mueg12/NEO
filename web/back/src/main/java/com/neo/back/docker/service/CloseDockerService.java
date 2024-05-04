@@ -24,6 +24,7 @@ import com.neo.back.docker.middleware.DockerAPI;
 import com.neo.back.docker.repository.DockerImageRepository;
 import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.EdgeServerRepository;
+import com.neo.back.docker.utility.MakeWebClient;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class CloseDockerService {
     private final DockerServerRepository dockerServerRepo;
     private final DockerImageRepository dockerImageRepo;
     private final EdgeServerRepository edgeServerRepo;
-    private final WebClient.Builder webClientBuilder;
+    private final MakeWebClient makeWebClient;
     private WebClient dockerWebClient;
     private String imageId;
 
@@ -46,7 +47,7 @@ public class CloseDockerService {
         if (dockerServer == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
         }
-        this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + dockerServer.getEdgeServer().getIp()+ ":2375").build();
+        this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
         
         return stopContainerRequest(dockerServer)
             .flatMap(result -> makeIamgeRequest(dockerServer))
@@ -127,7 +128,6 @@ public class CloseDockerService {
                 dockerImage.setSize(parseImageSize(response));
                 dockerImage.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 dockerImage.setGame(dockerServer.getGame());
-                dockerImage.setSetting(dockerServer.getSetting());
                 this.dockerImageRepo.save(dockerImage);
 
                 this.dockerServerRepo.deleteById(dockerServer.getId());

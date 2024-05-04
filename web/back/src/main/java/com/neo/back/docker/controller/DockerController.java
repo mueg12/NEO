@@ -1,14 +1,14 @@
 package com.neo.back.docker.controller;
 
 import com.neo.back.docker.dto.GameServerSettingDto;
-import com.neo.back.docker.entity.GameServerSetting;
+import com.neo.back.docker.entity.MinecreftServerSetting;
 import com.neo.back.docker.service.GameServerPropertyService;
-import com.neo.back.springjwt.entity.User;
+
+import lombok.RequiredArgsConstructor;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -17,19 +17,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 
 @RestController
+@RequiredArgsConstructor
 public class DockerController {
 
-    @Autowired
-    private GameServerPropertyService service;
+    private final GameServerPropertyService service;
 
 
-    public DockerController() {
-
-    }
     @PostMapping("/api/change-file")
     public Mono<String> changeFileInContainer(@RequestBody GameServerSettingDto req) throws IOException {
 
@@ -43,7 +39,7 @@ public class DockerController {
 
          // 추후 jwt 토큰에 User 정보 담아둘 거임. 임시 코드
 
-        GameServerSetting settings = service.loadSettings(UserId); // 서비스 메소드는 적절한 로직으로 구현되어야 함
+        MinecreftServerSetting settings = service.loadSettings(UserId); // 서비스 메소드는 적절한 로직으로 구현되어야 함
 
         // 모든 필드와 값을 가져와서 "컬럼: 값" 형식의 문자열로 변환
         String content = service.getString(settings);
@@ -68,7 +64,7 @@ public class DockerController {
     }
 
 
-    @GetMapping("/api/get-file")
+    @GetMapping("/api/get-file") //
     public Mono<String> getFileFromContainer() {
         String containerId = "87e5304723d4";
         String filePathInContainer = "/server/server.properties";
