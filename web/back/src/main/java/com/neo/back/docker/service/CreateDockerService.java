@@ -70,8 +70,8 @@ public class CreateDockerService {
             )
         );
 
-        return createContainerRequest(createContainerRequest)
-            .flatMap(response -> databaseReflection(config, game, null));
+        return this.createContainerRequest(createContainerRequest)
+            .flatMap(response -> this.databaseReflection(config, game, null));
     
     }
 
@@ -101,9 +101,9 @@ public class CreateDockerService {
 
         config.setServerName(dockerImage.get().getServerName());
 
-        return loadImage(dockerImage.get())
-            .flatMap(response -> createContainerRequest(createContainerRequest))
-            .flatMap(response -> databaseReflection(config, dockerImage.get().getGame(), dockerImage.get().getImageId()));
+        return this.loadImage(dockerImage.get())
+            .flatMap(response -> this.createContainerRequest(createContainerRequest))
+            .flatMap(response -> this.databaseReflection(config, dockerImage.get().getGame(), dockerImage.get().getImageId()));
     
     }
 

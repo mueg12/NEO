@@ -49,12 +49,12 @@ public class CloseDockerService {
         }
         this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
         
-        return stopContainerRequest(dockerServer)
-            .flatMap(result -> makeIamgeRequest(dockerServer))
-            .flatMap(result -> deleteContainerRequest(dockerServer))
-            .flatMap(result -> saveDockerImage(dockerServer))
-            .flatMap(result -> databaseReflection(dockerServer))
-            .flatMap(result -> deleteLeftDockerImage())
+        return this.stopContainerRequest(dockerServer)
+            .flatMap(result -> this.makeIamgeRequest(dockerServer))
+            .flatMap(result -> this.deleteContainerRequest(dockerServer))
+            .flatMap(result -> this.saveDockerImage(dockerServer))
+            .flatMap(result -> this.databaseReflection(dockerServer))
+            .flatMap(result -> this.deleteLeftDockerImage())
             .flatMap(result -> Mono.just("Server close & save success"));
     }
 

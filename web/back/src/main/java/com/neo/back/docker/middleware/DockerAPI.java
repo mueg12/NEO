@@ -73,6 +73,14 @@ public class DockerAPI {
             .bodyToMono(String.class);
     }
 
+    public Mono<String> getContainerInfo(String containerId, WebClient dockerWebClient) {
+        return dockerWebClient
+                .get()
+                .uri("/containers/{containerId}/stats?stream=false", containerId)
+                .retrieve()
+                .bodyToMono(String.class);
+    }
+
     public Mono<String> getImageInfo(String imageId, WebClient dockerWebClient) {
         return dockerWebClient.get()
             .uri("/images/{imageName}/json", imageId)
@@ -134,4 +142,20 @@ public class DockerAPI {
             .bodyToMono(String.class);
     }
 
+    public Mono<DataBuffer> downloadFile(String containerId, String path, WebClient dockerWebClient) {
+        return dockerWebClient.get()
+                .uri("/containers/" + containerId + "/archive?path=" + path)
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .retrieve()
+                .bodyToMono(DataBuffer.class);
+    }
+
+    public Mono<String> uploadFile(String containerId, String path, byte[] tarFile, WebClient dockerWebClient) {
+        return dockerWebClient.put()
+                .uri("/containers/" + containerId + "/archive?path=" + path)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .bodyValue(tarFile)
+                .retrieve()
+                .bodyToMono(String.class);
+    }
 }

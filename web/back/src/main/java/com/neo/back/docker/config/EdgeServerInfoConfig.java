@@ -2,7 +2,10 @@ package com.neo.back.docker.config;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.neo.back.docker.entity.MinecreftServerSetting;
+import com.neo.back.docker.repository.GameServerSettingRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +17,8 @@ import com.neo.back.docker.repository.GameRepository;
 import jakarta.annotation.PostConstruct;
 
 @Configuration
+@Transactional
+@RequiredArgsConstructor
 public class EdgeServerInfoConfig {
     
 	@Value("#{'${edgeservers.id}'.split(',')}")private List<String> edgeServerName;
@@ -23,10 +28,13 @@ public class EdgeServerInfoConfig {
 	@Value("#{'${edgeservers.memoryTotal}'.split(',')}")private List<String> edgeServerMemoryTotal;
 	@Value("#{'${edgeservers.memoryUse}'.split(',')}")private List<String> edgeServerMemoryUse;
 
-    @Autowired
-    EdgeServerRepository edgeServerInfo;
-    @Autowired
-    GameRepository gameRepo;
+
+    private final EdgeServerRepository edgeServerInfo;
+
+    private final GameRepository gameRepo;
+
+    private final GameServerSettingRepository gameServerSettingRepo;
+
 
 	@PostConstruct
 	private void init() {
@@ -42,11 +50,16 @@ public class EdgeServerInfoConfig {
             edgeServerInfo.save(edgeServer);
         }
 
+        MinecreftServerSetting minecreftServerSetting = new MinecreftServerSetting();
+        minecreftServerSetting.setSettingFilePath("/server/server.properties");
+        gameServerSettingRepo.save(minecreftServerSetting);
+
+
         Game game = new Game();
         game.setGameName("Minecreft");
         game.setVersion("1.16.5");
         game.setDockerImage("mc1.16.5");
-        game.setDefaultSetting(null);
+        game.setDefaultSetting(minecreftServerSetting);
         gameRepo.save(game);
         game.setGameName("Minecreft");
         game.setVersion("1.19.2");

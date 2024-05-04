@@ -1,19 +1,13 @@
 package com.neo.back.docker.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
-public class MinecreftServerSetting {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class MinecreftServerSetting extends GameServerSetting{
 
     private Boolean allow_flight = false;
 
@@ -57,10 +51,4 @@ public class MinecreftServerSetting {
 
     private Boolean white_list = false;
 
-    // 기본 생성자
-    public MinecreftServerSetting() {
-    }
-
-    // Getters and Setters
-    // ...
 }
