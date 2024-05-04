@@ -82,7 +82,7 @@ public class GameServerController {
 
         return serverSettingService.getContainerStats(containerId);
     }
-    
+
     @PostMapping("api/server/upload")
         public ResponseEntity<String> uploadFile(MultipartFile[] files) {
             File tempDir = new File(System.getProperty("java.io.tmpdir"), "uploadedFolder");
