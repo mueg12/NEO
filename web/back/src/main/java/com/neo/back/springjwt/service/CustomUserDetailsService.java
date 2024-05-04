@@ -1,7 +1,7 @@
 package com.neo.back.springjwt.service;
 
 import com.neo.back.springjwt.dto.CustomUserDetails;
-import com.neo.back.springjwt.entity.User;
+import com.neo.back.springjwt.entity.UserEntity;
 import com.neo.back.springjwt.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,7 +23,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
         //DB에서 조회
-        User userData = userRepository.findByUsername(username);
+        UserEntity userData = userRepository.findByUsername(username);
+
+        System.out.println(userData);
 
         if(userData != null){
             //UserDetails에 담아서 return하면 AuthenticationManager가 검증

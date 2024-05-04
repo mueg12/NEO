@@ -1,9 +1,13 @@
 package com.neo.back.springjwt.jwt;
 
 import com.neo.back.springjwt.dto.CustomUserDetails;
+import com.neo.back.springjwt.entity.RefreshEntity;
+import com.neo.back.springjwt.repository.RefreshRepository;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,10 +24,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JWTUtil jwtUtil;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    private final RefreshRepository refreshRepository;
+
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
 
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
     }
 
     @Override
@@ -47,16 +54,35 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String username = customUserDetails.getUsername();
 
+        System.out.println(username);
+
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username,role,60*60*10L);
+        String access = jwtUtil.createJwt("access",username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh",username, role, 8400000L);
 
-        response.addHeader("Authorization","Bearer " + token);
 
+        RefreshEntity refreshEntity = addRefreshEntity(username, refresh);
+
+
+        refreshRepository.save(refreshEntity);
+
+        response.addHeader("Authorization","Bearer " + access);
+        response.addCookie(createCookie("refresh", refresh));
+        response.setStatus(HttpStatus.OK.value());
+
+    }
+
+    private static RefreshEntity addRefreshEntity(String username, String refresh) {
+        RefreshEntity refreshEntity = new RefreshEntity();
+        refreshEntity.setRefresh(refresh);
+        refreshEntity.setUsername(username);
+        refreshEntity.setExpiration(8400000L);
+        return refreshEntity;
     }
 
     //로그인 실패시 실행하는 메소드
@@ -64,6 +90,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
 
         response.setStatus(401);
-
     }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(60*60*60);
+        //cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
+    }
+
 }

@@ -1,7 +1,9 @@
 package com.neo.back.springjwt.oauth2;
 
 import com.neo.back.springjwt.dto.CustomOAuth2User;
+import com.neo.back.springjwt.entity.RefreshEntity;
 import com.neo.back.springjwt.jwt.JWTUtil;
+import com.neo.back.springjwt.repository.RefreshRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,9 +22,11 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JWTUtil jwtUtil;
 
+    private final RefreshRepository refreshRepository;
 
-    public CustomSuccessHandler(JWTUtil jwtUtil) {
+    public CustomSuccessHandler(JWTUtil jwtUtil, RefreshRepository refreshRepository) {
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
     }
 
     @Override
@@ -38,9 +42,22 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*60*60L);
+        String access = jwtUtil.createJwt("access",username, role, 600000L);
+        String refresh = jwtUtil.createJwt("refresh",username, role, 8400000L);
 
-        response.addCookie(createCookie("Authorization", token));
+        RefreshEntity refreshEntity = new RefreshEntity();
+        refreshEntity.setRefresh(refresh);
+        refreshEntity.setUsername(username);
+        refreshEntity.setExpiration(8400000L);
+
+
+        refreshRepository.save(refreshEntity);
+
+
+        response.addCookie(createCookie("access", access));
+        response.addCookie(createCookie("refresh", refresh));
+
+
         response.sendRedirect("https://localhost:8443/");
     }
 

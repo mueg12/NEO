@@ -1,7 +1,7 @@
 package com.neo.back.springjwt.service;
 
 import com.neo.back.springjwt.dto.JoinDTO;
-import com.neo.back.springjwt.entity.User;
+import com.neo.back.springjwt.entity.UserEntity;
 import com.neo.back.springjwt.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,15 +32,17 @@ public class JoinService {
             return;
         }
 
-        User data = new User();
+        UserEntity UserEntity = new UserEntity();
 
-        data.setUsername(username);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
-        data.setRole("ROLE_ADMIN");
+        UserEntity.setUsername(username);
+        UserEntity.setPassword(bCryptPasswordEncoder.encode(password));
+        UserEntity.setRole("ROLE_ADMIN");
 
         System.out.println(username);
 
-        userRepository.save(data);
+        System.out.println(UserEntity);
+
+        userRepository.save(UserEntity);
 
     }
 
