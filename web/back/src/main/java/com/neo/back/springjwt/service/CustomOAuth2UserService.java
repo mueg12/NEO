@@ -1,7 +1,7 @@
 package com.neo.back.springjwt.service;
 
 import com.neo.back.springjwt.dto.*;
-import com.neo.back.springjwt.entity.UserEntity;
+import com.neo.back.springjwt.entity.User;
 import com.neo.back.springjwt.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -45,17 +45,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String username = oAuth2Response.getProvider()+" "+oAuth2Response.getProviderId();
 
-        UserEntity existData = userRepository.findByUsername(username);
+        User existData = userRepository.findByUsername(username);
 
         if (existData == null) {
 
-            UserEntity userEntity = new UserEntity();
-            userEntity.setUsername(username);
-            userEntity.setEmail(oAuth2Response.getEmail());
-            userEntity.setName(oAuth2Response.getName());
-            userEntity.setRole("ROLE_USER");
+            User user = new User();
+            user.setUsername(username);
+            user.setEmail(oAuth2Response.getEmail());
+            user.setName(oAuth2Response.getName());
+            user.setRole("ROLE_USER");
 
-            userRepository.save(userEntity);
+            userRepository.save(user);
 
             UserDTO userDTO = new UserDTO();
             userDTO.setUsername(username);

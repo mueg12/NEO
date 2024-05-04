@@ -1,6 +1,6 @@
 package com.neo.back.docker.dto;
 
-import com.neo.back.springjwt.entity.UserEntity;
+import com.neo.back.springjwt.entity.User;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DockerListDto {
-    private UserEntity userId;
+    private User userId;
     private Long Id;
 }

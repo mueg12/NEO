@@ -1,6 +1,6 @@
 package com.neo.back.docker.entity;
 
-import com.neo.back.springjwt.entity.UserEntity;
+import com.neo.back.springjwt.entity.User;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,7 +23,7 @@ public class DockerImage {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private User user;
     
     private String imageId;
 
