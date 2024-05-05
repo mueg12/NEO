@@ -156,7 +156,11 @@
             for (const item of items) {
                 const entry = item.webkitGetAsEntry();
                 if (entry.isDirectory) {
-                    await traverseDirectory(entry, formData);
+                    await traverseDirectory(entry, formData,entry.name+"/");
+                }else {
+                    // 폴더가 아닌 경우 파일을 FormData에 추가
+                    const file = await getFile(entry);
+                    formData.append('files', file, file.name);
                 }
             }
 
