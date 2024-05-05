@@ -46,7 +46,7 @@ public class GameServerController {
         return ResponseEntity.ok(stopMes);
     }
 
-    @GetMapping("/api/docker-file-list")
+    @GetMapping("/api/server/files")
     public ResponseEntity<?> getDockerFileList(@RequestParam String path) {
         Mono<String> fileListInst = gameDataService.getFileAndFolderListInst(path);
         List<FileDataDto> fileList = gameDataService.getFileAndFolderList(fileListInst);

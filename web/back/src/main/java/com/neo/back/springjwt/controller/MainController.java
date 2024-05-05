@@ -30,5 +30,10 @@ public class MainController {
         return "home";
     }
 
+    @GetMapping("/")
+    public String index() {
+        return "redirect:/index.html";
+    }
+
 
 }

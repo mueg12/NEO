@@ -120,10 +120,11 @@ public class SecurityConfig {
         //경로별 인가 작업
          http.
               authorizeHttpRequests((auth)-> auth
-
-//               .requestMatchers("/login","/","/api/join").permitAll()
-//               .requestMatchers("/api/admin").hasRole("ADMIN")
-//               .requestMatchers("/reissue").permitAll()
+               .requestMatchers("/static/**", "/public/**", "/resources/**", "/META-INF/resources/**").permitAll()
+                      .requestMatchers("/login","/","/api/join").permitAll()
+                      .requestMatchers("/api/**").authenticated()
+               .requestMatchers("/api/admin").hasRole("ADMIN")
+               .requestMatchers("/reissue").permitAll()
 //               .anyRequest().authenticated());
                .anyRequest().permitAll());
 
