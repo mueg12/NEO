@@ -9,6 +9,7 @@ import com.neo.back.docker.repository.DockerServerRepository;
 import com.neo.back.docker.repository.GameServerSettingRepository;
 import com.neo.back.docker.utility.MakeWebClient;
 
+import com.neo.back.springjwt.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -49,9 +50,9 @@ public class GameServerSettingService {
     private final DockerAPI dockerAPI;
     private WebClient dockerWebClient;
 
-    public Mono<String> getServerSetting() {
+    public Mono<String> getServerSetting(User user) {
 
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         if (dockerServer == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
         }
