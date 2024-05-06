@@ -59,7 +59,7 @@ public class GameServerSettingService {
         this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
         String containerId = dockerServer.getDockerId();
         String filePathInContainer = dockerServer.getGame().getDefaultSetting().getSettingFilePath();
-        Path localPath = Path.of("/mnt/nas/serverSetting/" + /*user +*/ ".tar");
+        Path localPath = Path.of("/mnt/nas/serverSetting/" + user.getUsername() + ".tar");
 
         // Docker 컨테이너로부터 파일 받아오기
         return this.getDockerContainerFile(containerId, filePathInContainer, localPath)

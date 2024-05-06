@@ -142,7 +142,7 @@ public class CreateDockerService {
     }
 
     private Mono<String> loadImage(DockerImage dockerImage) {
-        Path filePath = Paths.get("/mnt/nas/dockerImage/" + dockerImage.getServerName() + "_" + /*dockerImage.getUser().getId() +*/ ".tar");
+        Path filePath = Paths.get("/mnt/nas/dockerImage/" + dockerImage.getServerName() + "_" + dockerImage.getUser().getId() + ".tar");
         FileSystemResource resource = new FileSystemResource(filePath);
         
         return DataBufferUtils.read(resource, new DefaultDataBufferFactory(), 4096)
