@@ -87,7 +87,7 @@ public class CloseDockerService {
                 e.printStackTrace();
             }
         }
-        Path path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + /*dockerServer.getUser().getId() +*/ ".tar");
+        Path path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + dockerServer.getUser().getId() + ".tar");
         return this.dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)
