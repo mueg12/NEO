@@ -7,6 +7,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.neo.back.springjwt.entity.User;
 import org.json.JSONObject;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -42,8 +43,8 @@ public class CloseDockerService {
     private WebClient dockerWebClient;
     private String imageId;
 
-    public Mono<String> closeDockerService() {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public Mono<String> closeDockerService(User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         if (dockerServer == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
         }

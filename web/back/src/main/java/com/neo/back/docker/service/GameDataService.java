@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.neo.back.springjwt.entity.User;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,8 @@ public class GameDataService {
         }));
     }
     
-    public Mono<String> getFileAndFolderListInst(String path) {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public Mono<String> getFileAndFolderListInst(String path, User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         String ip = dockerServer.getEdgeServer().getIp();
         String dockerId = dockerServer.getDockerId();
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();
@@ -81,8 +82,8 @@ public class GameDataService {
         return jsonObject.getString("Id");
     }
     
-    public List<FileDataDto> getFileAndFolderList(Mono<String> fileListInst) {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public List<FileDataDto> getFileAndFolderList(Mono<String> fileListInst, User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         String ip = dockerServer.getEdgeServer().getIp();
         String fileListInstId = parseExecInstanceId(fileListInst.block());
         this.dockerWebClient =  this.webClientBuilder.baseUrl("http://" + ip +":2375").filter(logRequestAndResponse()).build();

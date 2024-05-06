@@ -75,12 +75,69 @@
 </head>
 <body>
 
-<h2>Login</h2>
+
+
+<h2>인증</h2>
 <form id="loginForm">
     Username: <input type="text" id="username" required>
     Password: <input type="password" id="password" required>
     <button type="submit">Login</button>
 </form>
+<button id="joinButton">회원가입</button>
+<button id="logoutButton">로그아웃</button>
+
+<script>
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+
+        const token = localStorage.getItem('jwtToken');
+        try {
+            const response = await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                }
+            });
+
+
+            const result = await response.json();
+            responseMessage.textContent = '로그아웃 되었습니다: ' + result.message;
+        } catch (error) {
+            responseMessage.textContent = '오류: ' + error.message;
+        }
+    });
+</script>
+
+<script>
+    document.getElementById('joinButton').addEventListener('click', async () => {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const formData = {
+            username,
+            password
+        };
+
+
+        try {
+            const response = await fetch('/api/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                throw new Error('회원가입 실패!');
+            }
+
+            const result = await response.json();
+            responseMessage.textContent = '회원가입 되었습니다: ' + result.message;
+        } catch (error) {
+            responseMessage.textContent = '오류: ' + error.message;
+        }
+    });
+</script>
 
 <script>
     document.getElementById('loginForm').addEventListener('submit', function(event) {

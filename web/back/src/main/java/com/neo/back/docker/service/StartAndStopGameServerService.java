@@ -3,6 +3,7 @@ package com.neo.back.docker.service;
 import java.io.Serializable;
 import java.util.Map;
 
+import com.neo.back.springjwt.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
@@ -72,8 +73,8 @@ public class StartAndStopGameServerService {
         return jsonObject.getString("Id");
     }
 
-    public StartGameServerDto getStartGameServer() {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public StartGameServerDto getStartGameServer(User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         String ip = dockerServer.getEdgeServer().getIp();
         String dockerId = dockerServer.getDockerId();
         int memory = dockerServer.getRAMCapacity();
@@ -136,8 +137,8 @@ public class StartAndStopGameServerService {
         return startGameServerDto;
     }
 
-    public StartGameServerDto getStopGameServer() {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public StartGameServerDto getStopGameServer(User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         String ip = dockerServer.getEdgeServer().getIp();
         String dockerId = dockerServer.getDockerId();
         StartGameServerDto startGameServerDto = new StartGameServerDto();
