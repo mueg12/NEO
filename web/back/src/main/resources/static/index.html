@@ -196,7 +196,7 @@
         const menu = document.createElement("div");
         menu.innerHTML = `
             <ul>
-                <li id="optionA">Option A</li>
+                <li id="makeDir">makeDir</li>
                 <li id="delete">Delete</li>
                 <li id="optionC">Option C</li>
             </ul>
@@ -209,6 +209,38 @@
         menu.style.border = "1px solid black";
         document.body.appendChild(menu);
     
+        function handleOptionClick_makeDir() {
+            const inputField = document.createElement("input");
+            inputField.setAttribute("type", "text");
+            inputField.setAttribute("placeholder", "디렉토리 이름을 입력하세요");
+            const submitButton = document.createElement("button");
+            submitButton.textContent = "확인";
+            submitButton.addEventListener("click", () => {
+                let path = "";
+                const userInput = inputField.value.trim();
+                if (userInput !== "") {
+                    if (previousPaths.length == 0) {
+                        path = userInput;
+                    } else {
+                        path = previousPaths.join('/') + "/"    + userInput;
+                    }
+                    
+                    fetch(`api/server/makeDir?path=${path}`, {
+                        method: "PUT",
+                    })
+                    .then(data => {
+                        console.log("makeDir",data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                    menu.remove();
+                }
+            });
+            menu.appendChild(inputField);
+            menu.appendChild(submitButton);
+        }
+
         function handleOptionClick_delete(path) {
             return () => {
                 fetch(`api/server/delete?path=${path}`, {
@@ -238,7 +270,8 @@
                 menu.remove();
             };
         }
-        document.getElementById("optionA").addEventListener("click", handleOptionClick("your/optionA/endpoint"));
+
+        document.getElementById("makeDir").addEventListener("click", handleOptionClick_makeDir());
         document.getElementById("delete").addEventListener("click", handleOptionClick_delete(previousPath));
         document.getElementById("optionC").addEventListener("click", handleOptionClick("your/optionC/endpoint"));
     

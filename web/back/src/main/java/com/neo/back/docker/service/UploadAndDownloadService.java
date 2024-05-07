@@ -175,4 +175,35 @@ public class UploadAndDownloadService {
         responseData.put("deleteStatus",(String)Mes.block());
         return responseData;
     }
+
+    public Map<String, String> makeDir(String path) {
+        User user = null;
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
+        String ip = dockerServer.getEdgeServer().getIp();
+        String dockerId = dockerServer.getDockerId();
+        this.dockerWebClient = makeWebClient.makeDockerWebClient(ip);
+
+        String[] makeDirStr = {"mkdir","server/"+ path };
+        Map<String, Object> delMesList = Map.of(
+            "AttachStdin", false,
+            "AttachStdout", true,
+            "AttachStderr", true,
+            "DetachKeys", "ctrl-p,ctrl-q",
+            "Tty", false,
+            "Cmd", makeDirStr,
+            "Env", new String[]{"FOO=bar", "BAZ=quux"}
+        );
+
+        Map<String, Boolean> makeDirList = Map.of(
+            "Detach", false,
+            "Tty", true
+        );
+
+        Mono<Map> execIdMes = this.dockerAPI.makeExec(dockerId, delMesList, this.dockerWebClient);
+        String execId = (String) execIdMes.block().get("Id");
+        Mono<String> Mes = this.dockerAPI.startExec( execId, makeDirList, this.dockerWebClient);
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("deleteStatus",(String)Mes.block());
+        return responseData;
+    }
 }

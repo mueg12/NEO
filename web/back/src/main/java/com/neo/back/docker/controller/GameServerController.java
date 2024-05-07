@@ -96,8 +96,15 @@ public class GameServerController {
     }
 
     @PutMapping("api/server/delete")
-    public ResponseEntity<Map<String, String>> putMethodName(@RequestParam String path) {
+    public ResponseEntity<Map<String, String>> deleteGameServerData(@RequestParam String path) {
         Map<String, String> Mes = uploadAndDownloadService.deleteFileAndFolder(path);
         return ResponseEntity.ok(Mes);
     }
+
+    @PutMapping("api/server/makeDir")
+    public ResponseEntity<Map<String, String>> makeDirInGameServer(@RequestParam String path) {
+        Map<String, String> Mes = uploadAndDownloadService.makeDir(path);
+        return ResponseEntity.ok(Mes);
+    }
+
 }
