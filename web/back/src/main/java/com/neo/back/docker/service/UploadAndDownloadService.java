@@ -12,10 +12,12 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -58,25 +60,8 @@ public class UploadAndDownloadService {
             e.printStackTrace();
         }
         Mono<String> result = postUserTarToContainer(dockerId, tarFileBytes, path);
-        String[] delMeoStr = {"rm","-f","server/userTar.tar"};
-        Map<String, Object> delMesList = Map.of(
-            "AttachStdin", false,
-            "AttachStdout", true,
-            "AttachStderr", true,
-            "DetachKeys", "ctrl-p,ctrl-q",
-            "Tty", false,
-            "Cmd", delMeoStr,
-            "Env", new String[]{"FOO=bar", "BAZ=quux"}
-        );
-
-        Map<String, Boolean> delStartList = Map.of(
-            "Detach", false,
-            "Tty", true
-        );
+        deleteFileAndFolder("userTar.tar");
         result.block();
-        Mono<Map> execIdMes = this.dockerAPI.makeExec(dockerId, delMesList, this.dockerWebClient);
-        String execId = (String) execIdMes.block().get("Id");
-        this.dockerAPI.startExec( execId, delStartList, this.dockerWebClient);
         delFileAndFolderAndTar(basePath);
         return  result; 
     }
@@ -159,5 +144,35 @@ public class UploadAndDownloadService {
                     e.printStackTrace();
                 }
             }
+    }
+    public Map<String, String> deleteFileAndFolder(String path){
+        User user = null;
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
+        String ip = dockerServer.getEdgeServer().getIp();
+        String dockerId = dockerServer.getDockerId();
+        this.dockerWebClient = makeWebClient.makeDockerWebClient(ip);
+
+        String[] delMeoStr = {"rm","-rf","server/"+ path };
+        Map<String, Object> delMesList = Map.of(
+            "AttachStdin", false,
+            "AttachStdout", true,
+            "AttachStderr", true,
+            "DetachKeys", "ctrl-p,ctrl-q",
+            "Tty", false,
+            "Cmd", delMeoStr,
+            "Env", new String[]{"FOO=bar", "BAZ=quux"}
+        );
+
+        Map<String, Boolean> delStartList = Map.of(
+            "Detach", false,
+            "Tty", true
+        );
+
+        Mono<Map> execIdMes = this.dockerAPI.makeExec(dockerId, delMesList, this.dockerWebClient);
+        String execId = (String) execIdMes.block().get("Id");
+        Mono<String> Mes = this.dockerAPI.startExec( execId, delStartList, this.dockerWebClient);
+        Map<String, String> responseData = new HashMap<>();
+        responseData.put("deleteStatus",(String)Mes.block());
+        return responseData;
     }
 }

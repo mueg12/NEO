@@ -173,6 +173,7 @@
                         handleDrop_path(event,"");
                     }
                 });
+                link.addEventListener("contextmenu",(event) => createContextMenu(event,item.fileName));
 
                 listItem.appendChild(link);
                 fileList.appendChild(listItem);
@@ -180,6 +181,71 @@
         })
         .catch(error => {
             console.error("Error fetching file list:", error);
+        });
+    }
+    function createContextMenu(event,path) {
+        event.preventDefault();
+
+        let previousPath = "";
+        if (previousPaths.length == 0) {
+            previousPath = path;
+        } else {
+            previousPath = previousPaths.join('/') + "/"    + path;
+        }
+
+        const menu = document.createElement("div");
+        menu.innerHTML = `
+            <ul>
+                <li id="optionA">Option A</li>
+                <li id="delete">Delete</li>
+                <li id="optionC">Option C</li>
+            </ul>
+        `;
+        menu.style.position = "absolute";
+        menu.style.top = `${event.clientY}px`;
+        menu.style.left = `${event.clientX}px`;
+        menu.style.backgroundColor = "white";
+        menu.style.padding = "10px";
+        menu.style.border = "1px solid black";
+        document.body.appendChild(menu);
+    
+        function handleOptionClick_delete(path) {
+            return () => {
+                fetch(`api/server/delete?path=${path}`, {
+                        method: 'PUT'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("delete",data);
+                        console.log("delete",data.deleteStatus);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+        function handleOptionClick(endpoint) {
+            return () => {
+                fetch(endpoint)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+        document.getElementById("optionA").addEventListener("click", handleOptionClick("your/optionA/endpoint"));
+        document.getElementById("delete").addEventListener("click", handleOptionClick_delete(previousPath));
+        document.getElementById("optionC").addEventListener("click", handleOptionClick("your/optionC/endpoint"));
+    
+        document.addEventListener("click", (e) => {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+            }
         });
     }
 

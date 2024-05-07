@@ -22,7 +22,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 
 
@@ -90,5 +93,11 @@ public class GameServerController {
         public  ResponseEntity<String> uploadFile(MultipartFile[] files,@RequestParam String path) {
             Mono<String> Mes = uploadAndDownloadService.upload(files,path);
         return Mes.map(message -> ResponseEntity.ok().body("{\"uploadStatus\": \"" + message + "\"}")).block();
+    }
+
+    @PutMapping("api/server/delete")
+    public ResponseEntity<Map<String, String>> putMethodName(@RequestParam String path) {
+        Map<String, String> Mes = uploadAndDownloadService.deleteFileAndFolder(path);
+        return ResponseEntity.ok(Mes);
     }
 }
