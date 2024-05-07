@@ -51,7 +51,7 @@ public class CloseDockerService {
         this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
         
         return this.stopContainerRequest(dockerServer)
-            .flatMap(result -> this.makeIamgeRequest(dockerServer))
+            .flatMap(result -> this.makeImageRequest(dockerServer))
             .flatMap(result -> this.deleteContainerRequest(dockerServer))
             .flatMap(result -> this.saveDockerImage(dockerServer))
             .flatMap(result -> this.databaseReflection(dockerServer))
@@ -65,7 +65,7 @@ public class CloseDockerService {
         return this.dockerAPI.stopContainer(dockerServer.getDockerId(), this.dockerWebClient);
     }
 
-    private Mono<String> makeIamgeRequest(DockerServer dockerServer) {
+    private Mono<String> makeImageRequest(DockerServer dockerServer) {
         return this.dockerAPI.commitContainer(dockerServer.getDockerId(), this.dockerWebClient)
             .flatMap(commitResponse -> {
                 String imageId = parseImageId(commitResponse);
