@@ -49,8 +49,8 @@ public class GameServerController {
         return ResponseEntity.ok(stopMes);
     }
 
-    @GetMapping("/api/docker-file-list")
-    public ResponseEntity<?> getDockerFileList(@RequestParam String path) {
+    @GetMapping("/api/server/ListOfFileAndFolder")
+    public ResponseEntity<List<FileDataDto>> getDockerFileList(@RequestParam String path) {
         Mono<String> fileListInst = gameDataService.getFileAndFolderListInst(path);
         List<FileDataDto> fileList = gameDataService.getFileAndFolderList(fileListInst);
         return ResponseEntity.ok(fileList);
@@ -87,9 +87,9 @@ public class GameServerController {
     }
 
     @PostMapping("api/server/upload")
-        public ResponseEntity<String> uploadFile(MultipartFile[] files) {
-            String Mes = uploadAndDownloadService.upload(files);
+        public  Mono<String> uploadFile(MultipartFile[] files,@RequestParam String path) {
+            Mono<String> Mes = uploadAndDownloadService.upload(files,path);
 
-        return ResponseEntity.ok("NULL");
+        return Mes;
     }
 }
