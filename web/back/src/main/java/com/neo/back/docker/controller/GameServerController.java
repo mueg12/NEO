@@ -87,9 +87,8 @@ public class GameServerController {
     }
 
     @PostMapping("api/server/upload")
-        public  Mono<String> uploadFile(MultipartFile[] files,@RequestParam String path) {
+        public  ResponseEntity<String> uploadFile(MultipartFile[] files,@RequestParam String path) {
             Mono<String> Mes = uploadAndDownloadService.upload(files,path);
-
-        return Mes;
+        return Mes.map(message -> ResponseEntity.ok().body("{\"uploadStatus\": \"" + message + "\"}")).block();
     }
 }

@@ -105,7 +105,7 @@ public class UploadAndDownloadService {
     private Mono<String> postUserTarToContainer(String containerId, byte[] tarFile, String path) {
         return  this.dockerAPI.uploadFile(containerId, "/server/" + path, tarFile, this.dockerWebClient)
                 .then(this.dockerAPI.restartContainer(containerId, this.dockerWebClient))
-                .thenReturn("File updated and container restarted.");
+                .thenReturn("uploadSuesses");
     }
 
     private void createTarArchive(Path basePath, Path tarPath){
