@@ -40,7 +40,7 @@ public class UploadAndDownloadService {
 
     public Mono<String> upload(MultipartFile[] files, String path){
         User user = null;
-        String userId = "null";  // 차후에 수정하도록 해야함
+        String userId = "null"; 
         DockerServer dockerServer = dockerServerRepo.findByUser(user);
         String ip = dockerServer.getEdgeServer().getIp();
         String dockerId = dockerServer.getDockerId();
