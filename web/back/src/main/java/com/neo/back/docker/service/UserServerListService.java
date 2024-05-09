@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.nio.file.*;
 
+import com.neo.back.springjwt.entity.User;
 import org.springframework.stereotype.Service;
 
 import com.neo.back.docker.dto.MyServerListDto;
@@ -21,21 +22,21 @@ import reactor.core.publisher.Mono;
 public class UserServerListService {
     private final DockerImageRepository dockerImageRepo;
 
-    public List<MyServerListDto> getServerList() {
-        List<DockerImage> dockerImages = dockerImageRepo.findByUser(null);
+    public List<MyServerListDto> getServerList(User user) {
+        List<DockerImage> dockerImages = dockerImageRepo.findByUser(user);
 
         return dockerImages.stream()
             .map(image -> new MyServerListDto(image.getId(), image.getGame().getGameName(),image.getGame().getVersion(), image.getServerName(), image.getDate()))
             .collect(Collectors.toList());
     }
 
-    public Mono<String> deleteServer(Long dockerNum) {
+    public Mono<String> deleteServer(Long ImageNum) {
         Path dockerImagePath = Paths.get("/mnt/nas/dockerImage");
-        Optional<DockerImage> dockerImage = dockerImageRepo.findById(dockerNum);
-        Path path = dockerImagePath.resolve(dockerImage.get().getServerName() + "_" + /*dockerImage.getUser().getId() +*/ ".tar");
+        Optional<DockerImage> dockerImage = dockerImageRepo.findById(ImageNum);
+        Path path = dockerImagePath.resolve(dockerImage.get().getServerName() + "_" + dockerImage.get().getUser().getId() + ".tar");
         try {
             Files.delete(path);
-            dockerImageRepo.deleteById(dockerNum);
+            dockerImageRepo.deleteById(ImageNum);
             return Mono.just("Delete image success");
         } catch (Exception e) {
             return Mono.error(new NoSuchFileException("Delete image fail"));

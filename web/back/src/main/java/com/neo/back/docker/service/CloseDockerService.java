@@ -7,6 +7,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.neo.back.springjwt.entity.User;
 import org.json.JSONObject;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -42,15 +43,15 @@ public class CloseDockerService {
     private WebClient dockerWebClient;
     private String imageId;
 
-    public Mono<String> closeDockerService() {
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+    public Mono<String> closeDockerService(User user) {
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         if (dockerServer == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
         }
         this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
         
         return this.stopContainerRequest(dockerServer)
-            .flatMap(result -> this.makeIamgeRequest(dockerServer))
+            .flatMap(result -> this.makeImageRequest(dockerServer))
             .flatMap(result -> this.deleteContainerRequest(dockerServer))
             .flatMap(result -> this.saveDockerImage(dockerServer))
             .flatMap(result -> this.databaseReflection(dockerServer))
@@ -64,7 +65,7 @@ public class CloseDockerService {
         return this.dockerAPI.stopContainer(dockerServer.getDockerId(), this.dockerWebClient);
     }
 
-    private Mono<String> makeIamgeRequest(DockerServer dockerServer) {
+    private Mono<String> makeImageRequest(DockerServer dockerServer) {
         return this.dockerAPI.commitContainer(dockerServer.getDockerId(), this.dockerWebClient)
             .flatMap(commitResponse -> {
                 String imageId = parseImageId(commitResponse);
@@ -86,7 +87,7 @@ public class CloseDockerService {
                 e.printStackTrace();
             }
         }
-        Path path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + /*dockerServer.getUser().getId() +*/ ".tar");
+        Path path = dockerImagePath.resolve(dockerServer.getServerName() + "_" + dockerServer.getUser().getId() + ".tar");
         return this.dockerWebClient.get()
             .uri("/images/{imageName}/get", this.imageId)
             .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE)

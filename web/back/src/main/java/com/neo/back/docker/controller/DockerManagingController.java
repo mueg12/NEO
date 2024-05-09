@@ -1,5 +1,7 @@
 package com.neo.back.docker.controller;
 
+import com.neo.back.docker.utility.GetCurrentUser;
+import com.neo.back.springjwt.entity.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,35 +29,36 @@ public class DockerManagingController {
     private final UserServerListService userServerService;
     private final CreateDockerService createDockerService;
     private final CloseDockerService closeDockerService;
+    private final GetCurrentUser getCurrentUser;
 
     @GetMapping("/api/container/list")
     public List<MyServerListDto> getMyServerList() {
-
-        return userServerService.getServerList();
+        User user = getCurrentUser.getUser();
+        return userServerService.getServerList(user);
     }
 
-    @DeleteMapping("/api/container/{dockerNum}")
-    public Mono<String> deleteContainer(@PathVariable Long dockerNum) {
+    @DeleteMapping("/api/container/{ImageNum}")
+    public Mono<String> deleteContainer(@PathVariable Long ImageNum) {
 
-        return userServerService.deleteServer(dockerNum);
+        return userServerService.deleteServer(ImageNum);
     }
 
     @PostMapping("/api/container/create")
     public Mono<String> createContainer(@RequestBody CreateDockerDto config) {
-
-        return createDockerService.createContainer(config);
+        User user = getCurrentUser.getUser();
+        return createDockerService.createContainer(config, user);
     }
 
     @PostMapping("/api/container/recreate")
     public Mono<String> recreateContainer(@RequestBody CreateDockerDto config) {
-
-        return createDockerService.recreateContainer(config);
+        User user = getCurrentUser.getUser();
+        return createDockerService.recreateContainer(config, user);
     }
 
     @PutMapping("/api/container/close")
     public Mono<String> closeContainer() {
-
-        return closeDockerService.closeDockerService();
+        User user = getCurrentUser.getUser();
+        return closeDockerService.closeDockerService(user);
     }
 
 }

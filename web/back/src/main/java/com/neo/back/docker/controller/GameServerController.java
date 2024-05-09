@@ -1,7 +1,9 @@
 package com.neo.back.docker.controller;
 
-import com.neo.back.docker.dto.GameServerSettingDto;
 import com.neo.back.docker.service.GameServerSettingService;
+import com.neo.back.docker.utility.GetCurrentUser;
+import com.neo.back.springjwt.entity.User;
+
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,6 @@ import java.util.Map;
 
 
 
-
 @RestController
 @RequiredArgsConstructor
 public class GameServerController {
@@ -37,38 +38,42 @@ public class GameServerController {
     private final GameServerSettingService serverSettingService;
     private final StartAndStopGameServerService startAndStopGameServerService;
     private final UploadAndDownloadService uploadAndDownloadService;
+    private final GetCurrentUser getCurrentUser;
 
-    @GetMapping("api/server/start")
+    @GetMapping("/api/server/start")
     public ResponseEntity<StartGameServerDto> serverStart() {
-        StartGameServerDto startMes =  startAndStopGameServerService.getStartGameServer();
+        User user = getCurrentUser.getUser();
+        StartGameServerDto startMes =  startAndStopGameServerService.getStartGameServer(user);
         System.out.println(startMes.getIsWorking());
         return ResponseEntity.ok(startMes);
     }
 
-    @GetMapping("api/server/stop")
+    @GetMapping("/api/server/stop")
     public ResponseEntity<StartGameServerDto> serverStop() {
-        StartGameServerDto stopMes =  startAndStopGameServerService.getStopGameServer();
+        User user = getCurrentUser.getUser();
+        StartGameServerDto stopMes =  startAndStopGameServerService.getStopGameServer(user);
         System.out.println(stopMes.getIsWorking());
         return ResponseEntity.ok(stopMes);
     }
 
     @GetMapping("/api/server/ListOfFileAndFolder")
     public ResponseEntity<List<FileDataDto>> getDockerFileList(@RequestParam String path) {
-        Mono<String> fileListInst = gameDataService.getFileAndFolderListInst(path);
-        List<FileDataDto> fileList = gameDataService.getFileAndFolderList(fileListInst);
+        User user = getCurrentUser.getUser();
+        Mono<String> fileListInst = gameDataService.getFileAndFolderListInst(path, user);
+        List<FileDataDto> fileList = gameDataService.getFileAndFolderList(fileListInst, user);
         return ResponseEntity.ok(fileList);
     }
 
     @GetMapping("/api/server/setting")
-    public Mono<String> getServerSetting() {
-
-        return serverSettingService.getServerSetting();
+    public Mono<Object> getServerSetting() {
+        User user = getCurrentUser.getUser();
+        return serverSettingService.getServerSetting(user);
     }
 
     @PostMapping("/api/server/setting")
-    public Mono<String> setServerSetting(@RequestBody GameServerSettingDto req) throws IOException {
-
-        return serverSettingService.setServerSetting(req);
+    public Mono<String> setServerSetting(@RequestBody Map<String, String> setting) throws IOException {
+        User user = getCurrentUser.getUser();
+        return serverSettingService.setServerSetting(setting, user);
     }
 
     @PostMapping("/api/get-banlist")//특정 파일 읽어오는 용도 api

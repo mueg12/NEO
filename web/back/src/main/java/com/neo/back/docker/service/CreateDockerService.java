@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Collections;
 import java.nio.file.*;
 
+import com.neo.back.springjwt.entity.User;
 import org.json.JSONObject;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -45,8 +46,8 @@ public class CreateDockerService {
     private EdgeServerInfoDto edgeServerInfo;
     private String containerId;
 
-    public Mono<String> createContainer(CreateDockerDto config) {
-        DockerServer existingDocker = this.dockerRepo.findByUser(null);
+    public Mono<String> createContainer(CreateDockerDto config, User user) {
+        DockerServer existingDocker = this.dockerRepo.findByUser(user);
         if (existingDocker != null) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user already has an open server."));
         
         this.edgeServerInfo = this.selectEdgeServerService.selectingEdgeServer(config.getRamCapacity());
@@ -71,12 +72,12 @@ public class CreateDockerService {
         );
 
         return this.createContainerRequest(createContainerRequest)
-            .flatMap(response -> this.databaseReflection(config, game, null));
+            .flatMap(response -> this.databaseReflection(config, game, null, user));
     
     }
 
-    public Mono<String> recreateContainer(CreateDockerDto config) {
-        DockerServer existingDocker = this.dockerRepo.findByUser(null);
+    public Mono<String> recreateContainer(CreateDockerDto config, User user) {
+        DockerServer existingDocker = this.dockerRepo.findByUser(user);
         if (existingDocker != null) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user already has an open server."));
 
         Optional<DockerImage> dockerImage = this.imageRepo.findById(config.getImageNum());
@@ -103,7 +104,7 @@ public class CreateDockerService {
 
         return this.loadImage(dockerImage.get())
             .flatMap(response -> this.createContainerRequest(createContainerRequest))
-            .flatMap(response -> this.databaseReflection(config, dockerImage.get().getGame(), dockerImage.get().getImageId()));
+            .flatMap(response -> this.databaseReflection(config, dockerImage.get().getGame(), dockerImage.get().getImageId(), user));
     
     }
 
@@ -121,14 +122,14 @@ public class CreateDockerService {
             }));
     }
 
-    private Mono<String> databaseReflection(CreateDockerDto config, Game game, String dockerImageId) {
+    private Mono<String> databaseReflection(CreateDockerDto config, Game game, String dockerImageId, User user) {
         
         DockerServer dockerServer = new DockerServer();
         if (dockerImageId != null) {
             dockerServer.setBaseImage(dockerImageId);
         }
 
-        dockerServer.setUser(null);
+        dockerServer.setUser(user);
         dockerServer.setServerName(config.getServerName());
         dockerServer.setEdgeServer(this.edgeRepo.findByIp(this.edgeServerInfo.getIP()));
         dockerServer.setPort(this.edgeServerInfo.getPortSelect());
@@ -141,7 +142,7 @@ public class CreateDockerService {
     }
 
     private Mono<String> loadImage(DockerImage dockerImage) {
-        Path filePath = Paths.get("/mnt/nas/dockerImage/" + dockerImage.getServerName() + "_" + /*dockerImage.getUser().getId() +*/ ".tar");
+        Path filePath = Paths.get("/mnt/nas/dockerImage/" + dockerImage.getServerName() + "_" + dockerImage.getUser().getId() + ".tar");
         FileSystemResource resource = new FileSystemResource(filePath);
         
         return DataBufferUtils.read(resource, new DefaultDataBufferFactory(), 4096)
