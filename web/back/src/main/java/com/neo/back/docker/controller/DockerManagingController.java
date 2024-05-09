@@ -37,10 +37,10 @@ public class DockerManagingController {
         return userServerService.getServerList(user);
     }
 
-    @DeleteMapping("/api/container/{dockerNum}")
-    public Mono<String> deleteContainer(@PathVariable Long dockerNum) {
+    @DeleteMapping("/api/container/{ImageNum}")
+    public Mono<String> deleteContainer(@PathVariable Long ImageNum) {
 
-        return userServerService.deleteServer(dockerNum);
+        return userServerService.deleteServer(ImageNum);
     }
 
     @PostMapping("/api/container/create")

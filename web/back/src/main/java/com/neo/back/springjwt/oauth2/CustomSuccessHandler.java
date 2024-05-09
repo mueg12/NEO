@@ -58,7 +58,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("refresh", refresh));
 
 
-        response.sendRedirect("https://localhost:8443/");
+        response.sendRedirect("https://localhost:8080/");
     }
 
     private Cookie createCookie(String key, String value) {

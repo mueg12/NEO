@@ -1,12 +1,8 @@
 package com.neo.back.docker.service;
 
-import com.neo.back.docker.dto.GameServerSettingDto;
 import com.neo.back.docker.entity.DockerServer;
-import com.neo.back.docker.entity.GameServerSetting;
-import com.neo.back.docker.entity.MinecreftServerSetting;
 import com.neo.back.docker.middleware.DockerAPI;
 import com.neo.back.docker.repository.DockerServerRepository;
-import com.neo.back.docker.repository.GameServerSettingRepository;
 import com.neo.back.docker.utility.MakeWebClient;
 
 import com.neo.back.springjwt.entity.User;
@@ -18,6 +14,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,30 +24,25 @@ import reactor.core.publisher.Mono;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class GameServerSettingService {
 
-    private final GameServerSettingRepository gameServerSettingRepo;
     private final DockerServerRepository dockerServerRepo;
     private final MakeWebClient makeWebClient;
     private final DockerAPI dockerAPI;
     private WebClient dockerWebClient;
 
-    public Mono<String> getServerSetting(User user) {
+    public Mono<Object> getServerSetting(User user) {
 
         DockerServer dockerServer = dockerServerRepo.findByUser(user);
         if (dockerServer == null) {
@@ -63,49 +55,42 @@ public class GameServerSettingService {
 
         // Docker 컨테이너로부터 파일 받아오기
         return this.getDockerContainerFile(containerId, filePathInContainer, localPath)
-                .flatMap(response -> this.settingFormatConversion(localPath));
+                .flatMap(response -> Mono.just(this.settingFormatConversion(localPath)));
 
     }
 
-    public Mono<String> setServerSetting(GameServerSettingDto req) throws IOException {
+    public Mono<String> setServerSetting(Map<String, String> setting, User user) throws IOException {
 
-        DockerServer dockerServer = dockerServerRepo.findByUser(null);
+        DockerServer dockerServer = dockerServerRepo.findByUser(user);
         if (dockerServer == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "This user does not have an open server."));
         }
         this.dockerWebClient =  this.makeWebClient.makeDockerWebClient(dockerServer.getEdgeServer().getIp());
+        String dockerId = dockerServer.getDockerId();
 
-        System.out.println(req.toString());
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, String> entry : setting.entrySet()) {
+            if (result.length() > 0) {
+                result.append("\n");
+            }
+            result.append(entry.getKey()).append(" = ").append(entry.getValue());
+        }
 
-        String dockerContainerId= req.getContainerId();
-        Long UserId = req.getUserId();
-
-        System.out.println(UserId);
-        System.out.println(dockerContainerId);
-
-        // 추후 jwt 토큰에 User 정보 담아둘 거임. 임시 코드
-
-        GameServerSetting settings = this.loadSettings(UserId); // 서비스 메소드는 적절한 로직으로 구현되어야 함
-
-        // 모든 필드와 값을 가져와서 "컬럼: 값" 형식의 문자열로 변환
-        String content = this.getString(settings);
-
-        System.out.println(content);
-
+        System.out.println(result.toString());
         // content 문자열을 바이트 배열로 변환
-        byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
+        byte[] contentBytes = result.toString().getBytes(StandardCharsets.UTF_8);
 
         // 파일 내용을 tar 파일로 압축
         byte[] tarFile = this.createTarContent(contentBytes);
 
         // tar 파일을 저장할 경로
-        Path tarPath = Path.of("server.properties.tar");
+        Path tarPath = Path.of("/mnt/nas/serverSetting/" + user.getUsername() + ".tar");
 
         // tar 파일 바이트 배열을 실제 파일로 저장
         Files.write(tarPath, tarFile);
 
         // Docker API를 통해 파일을 컨테이너에 복사
-        return this.changeFileinContainer(dockerContainerId, tarFile);
+        return this.changeFileinContainer(dockerId, tarFile);
     }
 
 
@@ -126,7 +111,7 @@ public class GameServerSettingService {
                 });
     }
 
-    private Mono<String> settingFormatConversion(Path localPath) {
+    private ResponseEntity<String> settingFormatConversion(Path localPath) {
         try {
             String propertiesString  = this.extractPropertiesFromTar(localPath.toString());
 
@@ -141,10 +126,10 @@ public class GameServerSettingService {
                     }
                 }
             }
-            return Mono.just(json.toString());
+            return ResponseEntity.ok(json.toString());
         } catch (IOException e) {
             e.printStackTrace();
-            return Mono.just("Error extracting server.properties");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error extracting server.properties");
         }
     }
 
@@ -159,26 +144,6 @@ public class GameServerSettingService {
             }
             return contentBuffer.toString(StandardCharsets.UTF_8.name());
         }
-    }
-
-
-    private GameServerSetting loadSettings(Long UserId) {
-        // 처음 데이터 반환하게 함.
-        // 더미 데이터 일단은 넣어두고 테스트
-        Optional<GameServerSetting> settings = gameServerSettingRepo.findById(UserId);
-
-        GameServerSetting returnsettings = settings.orElse(new MinecreftServerSetting()); // 게임별로 상황나눠야함
-
-        return returnsettings;
-    }
-
-    private String getString(GameServerSetting settings) {
-
-
-        String content = Arrays.stream(GameServerSetting.class.getDeclaredFields())
-                .map(field -> this.formatField(field, (MinecreftServerSetting) settings)) //게임별로 상황 나눠야함
-                .collect(Collectors.joining("\n"));
-        return content;
     }
 
     private byte[] createTarContent(byte[] fileContent) throws IOException {
@@ -208,17 +173,14 @@ public class GameServerSettingService {
                 .thenReturn("File updated and container restarted.");
     }
 
-    private String formatField(Field field, GameServerSetting settings) {
-        try {
-            field.setAccessible(true); // private 필드에 접근할 수 있도록 설정
-            String fieldName = field.getName().replace('_', '-');
 
-            Object value = field.get(settings);
-            return fieldName + ":" + value;
-        } catch (IllegalAccessException e) {
-            return field.getName() + ": error accessing value";
-        }
-    }
+
+
+
+
+
+
+
 
 
 

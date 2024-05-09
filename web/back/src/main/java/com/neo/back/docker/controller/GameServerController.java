@@ -1,9 +1,9 @@
 package com.neo.back.docker.controller;
 
-import com.neo.back.docker.dto.GameServerSettingDto;
 import com.neo.back.docker.service.GameServerSettingService;
 import com.neo.back.docker.utility.GetCurrentUser;
 import com.neo.back.springjwt.entity.User;
+
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 
 
@@ -60,15 +61,15 @@ public class GameServerController {
     }
 
     @GetMapping("/api/server/setting")
-    public Mono<String> getServerSetting() {
+    public Mono<Object> getServerSetting() {
         User user = getCurrentUser.getUser();
         return serverSettingService.getServerSetting(user);
     }
 
     @PostMapping("/api/server/setting")
-    public Mono<String> setServerSetting(@RequestBody GameServerSettingDto req) throws IOException {
+    public Mono<String> setServerSetting(@RequestBody Map<String, String> setting) throws IOException {
         User user = getCurrentUser.getUser();
-        return serverSettingService.setServerSetting(req);
+        return serverSettingService.setServerSetting(setting, user);
     }
 
     @PostMapping("/api/get-banlist")//특정 파일 읽어오는 용도 api
