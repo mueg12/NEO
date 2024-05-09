@@ -15,6 +15,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Random;
@@ -39,11 +40,12 @@ public class EmailService {
         Random random = new Random();
 
         return random.ints(leftLimit, rightLimit + 1)
-                .filter(i -> (i <=57 || i >=65) && (i <= 90 || i>= 97))
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
                 .limit(targetStringLength)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
     }
+
 
     private String setContext(String code) {
         Context context = new Context();
@@ -66,6 +68,7 @@ public class EmailService {
         return message;
     }
 
+
     public void sendEmail(String toEmail) throws MessagingException {
         if (redisUtil.existData(toEmail)) {
             redisUtil.deleteData(toEmail);
@@ -76,6 +79,7 @@ public class EmailService {
         mailSender.send(emailForm);
     }
 
+
     public Boolean verifyEmailCode(String email, String code) {
         String codeFoundByEmail = redisUtil.getData(email);
         System.out.println(codeFoundByEmail);
@@ -83,6 +87,20 @@ public class EmailService {
             return false;
         }
         return codeFoundByEmail.equals(code);
+    }
+
+
+    public void sendResetEmail(String toEmail, String tempPassword) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        message.addRecipients(MimeMessage.RecipientType.TO, toEmail);
+        message.setSubject("비밀번호 재설정 안내");
+        message.setFrom(configEmail);
+
+        // 이메일 내용 설정 (위에 sendemail처럼 템플릿 form 활용 가능 일단은 임시)
+        String content = "귀하의 임시 비밀번호는 " + tempPassword + "입니다. 로그인 후 비밀번호를 변경해주세요.";
+        message.setText(content, "utf-8", "html");
+
+        mailSender.send(message);
     }
 
 }
