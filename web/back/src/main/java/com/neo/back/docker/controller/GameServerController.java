@@ -40,7 +40,7 @@ public class GameServerController {
     private final UploadAndDownloadService uploadAndDownloadService;
     private final GetCurrentUser getCurrentUser;
 
-    @GetMapping("/api/server/start")
+    @PutMapping("/api/server/start")
     public ResponseEntity<StartGameServerDto> serverStart() {
         User user = getCurrentUser.getUser();
         StartGameServerDto startMes =  startAndStopGameServerService.getStartGameServer(user);
@@ -48,7 +48,7 @@ public class GameServerController {
         return ResponseEntity.ok(startMes);
     }
 
-    @GetMapping("/api/server/stop")
+    @PutMapping("/api/server/stop")
     public ResponseEntity<StartGameServerDto> serverStop() {
         User user = getCurrentUser.getUser();
         StartGameServerDto stopMes =  startAndStopGameServerService.getStopGameServer(user);
