@@ -30,13 +30,13 @@ public class UserServerListService {
             .collect(Collectors.toList());
     }
 
-    public Mono<String> deleteServer(Long dockerNum) {
+    public Mono<String> deleteServer(Long ImageNum) {
         Path dockerImagePath = Paths.get("/mnt/nas/dockerImage");
-        Optional<DockerImage> dockerImage = dockerImageRepo.findById(dockerNum);
+        Optional<DockerImage> dockerImage = dockerImageRepo.findById(ImageNum);
         Path path = dockerImagePath.resolve(dockerImage.get().getServerName() + "_" + dockerImage.get().getUser().getId() + ".tar");
         try {
             Files.delete(path);
-            dockerImageRepo.deleteById(dockerNum);
+            dockerImageRepo.deleteById(ImageNum);
             return Mono.just("Delete image success");
         } catch (Exception e) {
             return Mono.error(new NoSuchFileException("Delete image fail"));

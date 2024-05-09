@@ -74,103 +74,102 @@
 
 </head>
 <body>
+<!--    로그인 회원가입 로그아웃-->
+    <h2>인증</h2>
+    <form id="loginForm">
+        Username: <input type="text" id="username" required>
+        Password: <input type="password" id="password" required>
+        <button type="submit">Login</button>
+    </form>
+    <button id="joinButton">회원가입</button>
+    <button id="logoutButton">로그아웃</button>
+
+    <script>
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+
+            const token = localStorage.getItem('jwtToken');
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                    }
+                });
 
 
-
-<h2>인증</h2>
-<form id="loginForm">
-    Username: <input type="text" id="username" required>
-    Password: <input type="password" id="password" required>
-    <button type="submit">Login</button>
-</form>
-<button id="joinButton">회원가입</button>
-<button id="logoutButton">로그아웃</button>
-
-<script>
-    document.getElementById('logoutButton').addEventListener('click', async () => {
-
-        const token = localStorage.getItem('jwtToken');
-        try {
-            const response = await fetch('/logout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-                }
-            });
-
-
-            const result = await response.json();
-            responseMessage.textContent = '로그아웃 되었습니다: ' + result.message;
-        } catch (error) {
-            responseMessage.textContent = '오류: ' + error.message;
-        }
-    });
-</script>
-
-<script>
-    document.getElementById('joinButton').addEventListener('click', async () => {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const formData = {
-            username,
-            password
-        };
-
-
-        try {
-            const response = await fetch('/api/join', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('회원가입 실패!');
+                const result = await response.json();
+                responseMessage.textContent = '로그아웃 되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
             }
+        });
+    </script>
 
-            const result = await response.json();
-            responseMessage.textContent = '회원가입 되었습니다: ' + result.message;
-        } catch (error) {
-            responseMessage.textContent = '오류: ' + error.message;
-        }
-    });
-</script>
+    <script>
+        document.getElementById('joinButton').addEventListener('click', async () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-<script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // 폼 제출 기본 동작 방지
+            const formData = {
+                username,
+                password
+            };
 
-        const formData = new FormData();
-        formData.append('username', document.getElementById('username').value);
-        formData.append('password', document.getElementById('password').value);
 
-        // 서버로 로그인 요청 보내기
-        fetch('/login', {
-            method: 'POST',
-            body: formData // FormData 객체를 요청 본문으로 설정
-        })
-            .then(response => {
-                // 헤더에서 Authorization 값을 추출
-                const authToken = response.headers.get('Authorization');
-                if (authToken) {
-                    // 로컬 스토리지에 토큰 저장
-                    localStorage.setItem('jwtToken', authToken.split(' ')[1]); // 'Bearer ' 접두사 제거
-                    console.log('Token stored in localStorage');
-                } else {
-                    console.error('Authorization token not found in headers');
+            try {
+                const response = await fetch('/api/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                if (!response.ok) {
+                    throw new Error('회원가입 실패!');
                 }
-                return response.json(); // JSON 응답 처리를 계속 진행
+
+                const result = await response.json();
+                responseMessage.textContent = '회원가입 되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
+            }
+        });
+    </script>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // 폼 제출 기본 동작 방지
+
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+
+            // 서버로 로그인 요청 보내기
+            fetch('/login', {
+                method: 'POST',
+                body: formData // FormData 객체를 요청 본문으로 설정
             })
-            .catch(error => {
-                console.error('Login failed:', error);
-            });
-    });
+                .then(response => {
+                    // 헤더에서 Authorization 값을 추출
+                    const authToken = response.headers.get('Authorization');
+                    if (authToken) {
+                        // 로컬 스토리지에 토큰 저장
+                        localStorage.setItem('jwtToken', authToken.split(' ')[1]); // 'Bearer ' 접두사 제거
+                        console.log('Token stored in localStorage');
+                    } else {
+                        console.error('Authorization token not found in headers');
+                    }
+                    return response.json(); // JSON 응답 처리를 계속 진행
+                })
+                .catch(error => {
+                    console.error('Login failed:', error);
+                });
+        });
 
-</script>
+    </script>
 
+<!--    서버 생성 및 삭제-->
     <form id="gameForm">
         <label for="gameName">게임 종류:</label>
         <select id="gameName">
@@ -221,132 +220,56 @@
         <div>생성 중...</div>
     </div>
 
-    <div id="drop_area">
-        Drop folder here and i show your file list
-    </div>
-    <ul id="UserFileList"></ul>
-
     <script>
-        const dropArea = document.getElementById('drop_area');
-        const fileList = document.getElementById('UserFileList');
+        function submitForm() {
+            const gameName = document.getElementById('gameName').value;
+            const version = document.getElementById('version').value;
+            const serverName = document.getElementById('serverName').value;
+            const ramCapacity = document.getElementById('ramCapacity').value;
+            const paymentSystem = document.getElementById('paymentSystem').value;
+            const time = document.getElementById('time').value;
 
-        dropArea.addEventListener('dragover', (event) => {
-            event.preventDefault();
-            dropArea.style.border = '2px dashed red'; // 드래그 중일 때의 스타일
-        });
+            const formData = {
+                gameName,
+                version,
+                serverName,
+                ramCapacity,
+                paymentSystem,
+                time
+            };
 
-        dropArea.addEventListener('dragleave', (event) => {
-            event.preventDefault();
-            dropArea.style.border = '2px dashed blue'; // 드래그를 끝냈을 때의 스타일
-        });
-
-        dropArea.addEventListener('drop', async (event) => {
-            event.preventDefault();
-            dropArea.style.border = '2px dashed blue'; // 드롭 후의 스타일
-            const items = event.dataTransfer.items;
-
-            // FormData 객체 생성
-            const formData = new FormData();
-
-            // 드롭된 항목이 폴더인지 확인하여 파일들을 FormData에 추가
-            for (const item of items) {
-                const entry = item.webkitGetAsEntry();
-                if (entry.isDirectory) {
-                    await traverseDirectory(entry, formData);
-                }
-            }
+            // 로딩 창 보이기
+            document.getElementById('loadingOverlay').style.display = 'flex';
 
             const token = localStorage.getItem('jwtToken');
-
-            // FormData를 서버로 전송
-            fetch('api/server/upload', {
+            fetch('/api/container/create', {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-                }
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(formData),
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('서버에서 받은 데이터:', data);
-            })
-            .catch(error => {
-                console.error('에러 발생:', error);
-            });
-        });
-
-        async function traverseDirectory(directory, formData, path = '') {
-            const reader = directory.createReader();
-            const entries = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
-
-            for (const entry of entries) {
-                const entryPath = path + entry.name;
-                if (entry.isDirectory) {
-                    await traverseDirectory(entry, formData, `${entryPath}/`);
-                } else {
-                    const file = await getFile(entry);
-                    formData.append('files', file, entryPath);
-                }
-            }
-        }
-
-        async function getFile(fileEntry) {
-            return new Promise((resolve, reject) => {
-                fileEntry.file(resolve, reject);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        // 오류 상태 코드를 처리합니다. 여기서는 에러를 throw 하지만, 다른 방식으로 처리할 수도 있습니다.
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json()
+                })
+                .then(data => {
+                    alert("생성 완료");
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert("생성 실패");
+                })
+                .finally(() => {
+                    // 로딩 창 숨기기
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
         }
     </script>
-
-<script>
-    function submitForm() {
-        const gameName = document.getElementById('gameName').value;
-        const version = document.getElementById('version').value;
-        const serverName = document.getElementById('serverName').value;
-        const ramCapacity = document.getElementById('ramCapacity').value;
-        const paymentSystem = document.getElementById('paymentSystem').value;
-        const time = document.getElementById('time').value;
-
-        const formData = {
-            gameName,
-            version,
-            serverName,
-            ramCapacity,
-            paymentSystem,
-            time
-        };
-
-        // 로딩 창 보이기
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/container/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify(formData),
-        })
-        .then(response => {
-            if (!response.ok) {
-                // 오류 상태 코드를 처리합니다. 여기서는 에러를 throw 하지만, 다른 방식으로 처리할 수도 있습니다.
-                throw new Error('Network response was not ok');
-            }
-            return response.json()
-        })
-        .then(data => {
-            alert("생성 완료");
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert("생성 실패");
-        })
-        .finally(() => {
-            // 로딩 창 숨기기
-            document.getElementById('loadingOverlay').style.display = 'none';
-        });
-    }
-</script>
     <div id="loading" style="display: none;">삭제 중...</div>
     <div id="responseMessage"></div>
     <button id="deleteButton">컨테이너 삭제</button>
@@ -385,55 +308,62 @@
         });
     </script>
 
-<div id="userDockerList"></div>
 
+<!--    파일 목록 및 파일 관리-->
     <h3>해당 폴더에 있는 폴더 및 파일 목록:</h3>
     <button id="goBackButton">뒤로 가기</button>
     <ul id="fileList"></ul>
-    <h1>게임 서버 제어 API</h1>
-    <h2>게임 서버 시작</h2>
-    <p>게임 서버를 시작합니다.</p>
-    <button onclick="startServer()">서버 시작</button>
 
-    <h2>게임 서버 종료</h2>
-    <p>게임 서버를 종료합니다.</p>
-    <button onclick="stopServer()">서버 종료</button>
-
-<script>
-
+    <script>
+    var fileList = document.getElementById("fileList");
     // 페이지 로드 시 사용자 정보 가져오기
     document.addEventListener("DOMContentLoaded", function() {
         // getUserInfo();
         refreshFileList(``);
     });
-
     function refreshFileList(path) {
         const token = localStorage.getItem('jwtToken');
-        fetch(`/api/server/files?path=${path}`, {
+        fetch(`/api/server/ListOfFileAndFolder?path=${path}`, {
             headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                'Content-Type': 'application/json',
             }
         })
         .then(response => response.json())
         .then(data => {
             // console.log(data); // 받은 데이터를 콘솔에 출력
-            const fileList = document.getElementById("fileList");
             fileList.innerHTML = "";
             data.forEach(item => {
                 // console.log(item.name + (item.directory));
                 // console.log(item);
                 const listItem = document.createElement("li");
                 const link = document.createElement("a");
-                link.textContent = item.file + (item.isDirectory ? " (폴더)" : " (파일)");
+                link.textContent = item.fileName + (item.isDirectory ? " (폴더)" : " (파일)");
                 link.href = "#";
                 link.addEventListener("click", () => {
                     if (item.isDirectory) {
-                        previousPaths.push(item.file);
-                        refreshFileList(`${path}/${item.file}`);
+                        previousPaths.push(item.fileName);
+                        refreshFileList(`${path}/${item.fileName}`);
                     } else {
-                        downloadFile(`${path}/${item.file}`);
+                        downloadFile(`${path}/${item.fileName}`);
                     }
                 });
+                link.addEventListener('dragover', (event) => {
+                    event.preventDefault();
+                    link.style.border = '2px dashed red'; // 드래그 중일 때의 스타일
+                });
+                link.addEventListener('dragleave', (event) => {
+                    event.preventDefault();
+                    link.style.border = '2px dashed blue'; // 드래그를 끝냈을 때의 스타일
+                });
+                link.addEventListener('drop',(event) => {
+                    if (item.isDirectory) {
+                        handleDrop_path(event,item.fileName);
+                    } else {
+                        handleDrop_path(event,"");
+                    }
+                });
+                link.addEventListener("contextmenu",(event) => createContextMenu(event,item.fileName));
+
                 listItem.appendChild(link);
                 fileList.appendChild(listItem);
             });
@@ -442,14 +372,144 @@
             console.error("Error fetching file list:", error);
         });
     }
+    function createContextMenu(event,path) {
+        event.preventDefault();
 
-        // 이전 경로를 저장하는 변수
+        let previousPath = "";
+        if (previousPaths.length == 0) {
+            previousPath = path;
+        } else {
+            previousPath = previousPaths.join('/') + "/"    + path;
+        }
+
+        const menu = document.createElement("div");
+        menu.innerHTML = `
+            <ul>
+                <li id="makeDir">makeDir</li>
+                <li id="delete">Delete</li>
+                <li id="optionC">Option C</li>
+            </ul>
+        `;
+        menu.style.position = "absolute";
+        menu.style.top = `${event.clientY}px`;
+        menu.style.left = `${event.clientX}px`;
+        menu.style.backgroundColor = "white";
+        menu.style.padding = "10px";
+        menu.style.border = "1px solid black";
+        document.body.appendChild(menu);
+    
+        function handleOptionClick_makeDir() {
+            const inputField = document.createElement("input");
+            inputField.setAttribute("type", "text");
+            inputField.setAttribute("placeholder", "디렉토리 이름을 입력하세요");
+            const submitButton = document.createElement("button");
+            submitButton.textContent = "확인";
+            submitButton.addEventListener("click", () => {
+                let path = "";
+                const userInput = inputField.value.trim();
+                if (userInput !== "") {
+                    if (previousPaths.length == 0) {
+                        path = userInput;
+                    } else {
+                        path = previousPaths.join('/') + "/"    + userInput;
+                    }
+                    const token = localStorage.getItem('jwtToken');
+                    fetch(`api/server/makeDir?path=${path}`, {
+                        method: "PUT",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(data => {
+                        console.log("makeDir",data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                    menu.remove();
+                }
+            });
+            menu.appendChild(inputField);
+            menu.appendChild(submitButton);
+        }
+
+        function handleOptionClick_delete(path) {
+            return () => {
+                const token = localStorage.getItem('jwtToken');
+                fetch(`api/server/delete?path=${path}`, {
+                    method: 'PUT'
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("delete",data);
+                        console.log("delete",data.deleteStatus);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+        function handleOptionClick(endpoint) {
+            return () => {
+                fetch(endpoint)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+
+        document.getElementById("makeDir").addEventListener("click", handleOptionClick_makeDir());
+        document.getElementById("delete").addEventListener("click", handleOptionClick_delete(previousPath));
+        document.getElementById("optionC").addEventListener("click", handleOptionClick("your/optionC/endpoint"));
+    
+        document.addEventListener("click", (e) => {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+            }
+        });
+    }
+
+    async function handleDrop_path(event, path="") {
+        event.preventDefault();
+        let previousPath = "";
+        if (path == "" || previousPaths.length == 0) {
+            previousPath = path;
+        } else {
+            previousPath = previousPaths.join('/') + "/" + path;
+        }
+        const items = event.dataTransfer.items;
+    
+        // FormData 객체 생성
+        const formData = new FormData();
+    
+        // 드롭된 항목이 폴더인지 확인하여 파일들을 FormData에 추가
+        for (const item of items) {
+            const entry = item.webkitGetAsEntry();
+            if (entry.isDirectory) {
+                await traverseDirectory(entry, formData, entry.name + "/");
+            } else {
+                // 폴더가 아닌 경우 파일을 FormData에 추가
+                const file = await getFile(entry);
+                formData.append('files', file, file.name);
+            }
+        }
+    
+        // FormData를 서버로 전송
+        uploadFormData(formData,previousPath);
+    }
+
     let previousPath = "";
-
-    // 이전 경로들을 저장하는 배열
     let previousPaths = [];
 
-    // 뒤로 가기 버튼 클릭 시 이벤트 핸들러
     document.getElementById("goBackButton").addEventListener("click", () => {
         console.log(previousPaths);
         // 이전 경로가 있을 경우
@@ -463,53 +523,153 @@
         }
     });
 
-    function downloadFile(filePath) {
-        // 여기에 파일 다운로드 로직을 추가하세요.
-        alert(`선택된 파일: ${filePath}`);
-    }
+    </script>
+    
+    <div id="drop_area">
+        Drop folder here and i show your file list
+    </div>
+    
+    <script>
+        const dropArea = document.getElementById('drop_area');
 
-    function startServer() {
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/server/start', {
-            headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 시작에 실패했습니다.');
+        dropArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropArea.style.border = '2px dashed red'; // 드래그 중일 때의 스타일
+        });
+
+        dropArea.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            dropArea.style.border = '2px dashed blue'; // 드래그를 끝냈을 때의 스타일
+        });
+
+        dropArea.addEventListener('drop', handleDrop);
+
+        async function handleDrop(event) {
+            event.preventDefault();
+            dropArea.style.border = '2px dashed blue'; // 드롭 후의 스타일
+            const items = event.dataTransfer.items;
+        
+            // FormData 객체 생성
+            const formData = new FormData();
+        
+            // 드롭된 항목이 폴더인지 확인하여 파일들을 FormData에 추가
+            for (const item of items) {
+                const entry = item.webkitGetAsEntry();
+                if (entry.isDirectory) {
+                    await traverseDirectory(entry, formData, entry.name + "/");
+                } else {
+                    // 폴더가 아닌 경우 파일을 FormData에 추가
+                    const file = await getFile(entry);
+                    formData.append('files', file, file.name);
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('서버 시작:', data);
-                // 여기에서 필요한 처리를 수행하세요.
-            })
-            .catch(error => console.error('오류 발생:', error));
-    }
-
-    function stopServer() {
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/server/stop', {
-            headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
             }
 
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 종료에 실패했습니다.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('서버 종료:', data);
-                // 여기에서 필요한 처리를 수행하세요.
-            })
-            .catch(error => console.error('오류 발생:', error));
-    }
-</script>
 
+            const token = localStorage.getItem('jwtToken');
+
+            // FormData를 서버로 전송
+            uploadFormData(formData);
+        }
+        
+        function uploadFormData(formData,path='') {
+            const token = localStorage.getItem('jwtToken');
+            // console.log(path);
+            fetch(`api/server/upload?path=${path}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('서버에서 받은 데이터:', data);
+                const uploadStatus = data.uploadStatus;
+                console.log('서버에서 받은 uploadStatus 값:', uploadStatus);
+            })
+            .catch(error => {
+                console.error('에러 발생:', error);
+            });
+        }
+
+        async function traverseDirectory(directory, formData, path = '') {
+            const reader = directory.createReader();
+            const entries = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+
+            for (const entry of entries) {
+                const entryPath = path + entry.name;
+                if (entry.isDirectory) {
+                    await traverseDirectory(entry, formData, `${entryPath}/`);
+                } else {
+                    const file = await getFile(entry);
+                    formData.append('files', file, entryPath);
+                }
+            }
+        }
+
+        async function getFile(fileEntry) {
+            return new Promise((resolve, reject) => {
+                fileEntry.file(resolve, reject);
+            });
+        }
+    </script>
+
+
+<!--    서버 시작 중지-->
+    <h1>게임 서버 제어 API</h1>
+    <h2>게임 서버 시작</h2>
+    <p>게임 서버를 시작합니다.</p>
+    <button onclick="startServer()">서버 시작</button>
+
+    <h2>게임 서버 종료</h2>
+    <p>게임 서버를 종료합니다.</p>
+    <button onclick="stopServer()">서버 종료</button>
+
+    <script>
+        function startServer() {
+            const token = localStorage.getItem('jwtToken');
+            fetch('/api/server/start', {
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 시작에 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('서버 시작:', data);
+                    // 여기에서 필요한 처리를 수행하세요.
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
+
+        function stopServer() {
+            const token = localStorage.getItem('jwtToken');
+            fetch('/api/server/stop', {
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                }
+
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 종료에 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('서버 종료:', data);
+                    // 여기에서 필요한 처리를 수행하세요.
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
+    </script>
+
+
+<!--    데이터 베이스-->
     <h1>데이터베이스 정보</h1>
 
     <section>
@@ -518,6 +678,7 @@
             <tr>
                 <th>ID</th>
                 <th>서버이름</th>
+                <th>우저</th>
                 <th>이미지ID</th>
                 <th>크기</th>
                 <th>생성날짜</th>
@@ -532,11 +693,13 @@
             <tr>
                 <th>ID</th>
                 <th>서버이름</th>
+                <th>유저</th>
                 <th>엣지서버</th>
                 <th>포트</th>
                 <th>도커ID</th>
                 <th>램</th>
                 <th>게임</th>
+                <th>베이스이미지</th>
             </tr>
         </table>
     </section>

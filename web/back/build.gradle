@@ -42,6 +42,15 @@ dependencies {
 
 // edge server에 접근하기 위한 의존성
 	implementation 'com.jcraft:jsch:0.1.55'
+	// 메일 인증 서비스를 위한 의존성
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version : '3.0.5'
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator' //actuator 추가
+
+	implementation 'org.springframework.data:spring-data-redis'
+
+    implementation 'io.lettuce:lettuce-core'
+
 }
 
 tasks.named('test') {

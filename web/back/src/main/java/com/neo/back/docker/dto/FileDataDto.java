@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FileDataDto {
-    private String file;
+    private String fileName;
     private Boolean isDirectory;
 }

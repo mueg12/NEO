@@ -110,7 +110,7 @@ public class GameDataService {
             String line = lines[i];
             char firstChar = line.charAt(0);
             FileDataDto fileData = new FileDataDto();
-            fileData.setFile(line.split(" ")[line.split(" ").length - 1]);
+            fileData.setFileName(line.split(" ")[line.split(" ").length - 1]);
             if (firstChar == 'd') {
                 fileData.setIsDirectory(true);
             } else {

@@ -8,16 +8,16 @@ import lombok.Setter;
 public class testDockerImageDto {
     Long id;
     String serverName;
-    //String user;
+    String user;
     String imageId;
     Long size;
     String date;
     String game;
 
-    public testDockerImageDto(Long id, String serverName, String imageId, Long size, String date, String game) {
+    public testDockerImageDto(Long id, String serverName, String username, String imageId, Long size, String date, String game) {
         this.id = id;
         this.serverName = serverName;
-        //this.user = username;
+        this.user = username;
         this.imageId = imageId;
         this.size = size;
         this.date = date;

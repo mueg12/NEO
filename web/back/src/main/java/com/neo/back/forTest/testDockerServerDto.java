@@ -8,7 +8,7 @@ import lombok.Setter;
 public class testDockerServerDto {
     Long id;
     String serverName;
-    //String user;
+    String userName;
     String edgeServer;
     int port;
     String dockerId;
@@ -16,9 +16,10 @@ public class testDockerServerDto {
     String game;
     String baseImage;
 
-    public testDockerServerDto(Long id, Long id1, String serverName, String edgeServerName, int port, String dockerId, int ramCapacity, String game, String baseImage) {
+    public testDockerServerDto(Long id, String serverName, String userName, String edgeServerName, int port, String dockerId, int ramCapacity, String game, String baseImage) {
         this.id = id;
         this.serverName = serverName;
+        this.userName = userName;
         this.edgeServer = edgeServerName;
         this.port = port;
         this.dockerId = dockerId;

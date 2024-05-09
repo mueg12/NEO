@@ -77,6 +77,9 @@ jobs:
           edgeserver.number= ${{ secrets.EDGESERVER_NUMBER }}
 
           KEY_STORE_PASSWORD = ${{ secrets.KEY_STORE_PASSWORD }}
+
+          SPRING_MAIL_USERNAME = ${{ secrets.SPRING_MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD = ${{ secrets.SPRING_MAIL_PASSWORD }}
           EOT
           chmod +x ./gradlew
           ./gradlew build
