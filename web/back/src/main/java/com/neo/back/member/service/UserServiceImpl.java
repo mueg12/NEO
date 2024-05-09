@@ -1,6 +1,6 @@
 package com.neo.back.member.service;
 
-import com.neo.back.springjwt.entity.UserEntity;
+import com.neo.back.springjwt.entity.User;
 import com.neo.back.springjwt.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public boolean changePassword(String username, String currentPassword, String newPassword) {
-        UserEntity user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
         if (user != null && passwordEncoder.matches(currentPassword, user.getPassword())) {
 
             System.out.println(user.getPassword());
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public boolean resetPassword(String username) {
-        UserEntity user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username);
 
         if (user != null) {
             String tempPassword = createTemporaryPassword(); // 임시 비밀번호 생성 메소드

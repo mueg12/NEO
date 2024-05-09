@@ -74,103 +74,102 @@
 
 </head>
 <body>
+<!--    로그인 회원가입 로그아웃-->
+    <h2>인증</h2>
+    <form id="loginForm">
+        Username: <input type="text" id="username" required>
+        Password: <input type="password" id="password" required>
+        <button type="submit">Login</button>
+    </form>
+    <button id="joinButton">회원가입</button>
+    <button id="logoutButton">로그아웃</button>
+
+    <script>
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+
+            const token = localStorage.getItem('jwtToken');
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                    }
+                });
 
 
-
-<h2>인증</h2>
-<form id="loginForm">
-    Username: <input type="text" id="username" required>
-    Password: <input type="password" id="password" required>
-    <button type="submit">Login</button>
-</form>
-<button id="joinButton">회원가입</button>
-<button id="logoutButton">로그아웃</button>
-
-<script>
-    document.getElementById('logoutButton').addEventListener('click', async () => {
-
-        const token = localStorage.getItem('jwtToken');
-        try {
-            const response = await fetch('/logout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-                }
-            });
-
-
-            const result = await response.json();
-            responseMessage.textContent = '로그아웃 되었습니다: ' + result.message;
-        } catch (error) {
-            responseMessage.textContent = '오류: ' + error.message;
-        }
-    });
-</script>
-
-<script>
-    document.getElementById('joinButton').addEventListener('click', async () => {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const formData = {
-            username,
-            password
-        };
-
-
-        try {
-            const response = await fetch('/api/join', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('회원가입 실패!');
+                const result = await response.json();
+                responseMessage.textContent = '로그아웃 되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
             }
+        });
+    </script>
 
-            const result = await response.json();
-            responseMessage.textContent = '회원가입 되었습니다: ' + result.message;
-        } catch (error) {
-            responseMessage.textContent = '오류: ' + error.message;
-        }
-    });
-</script>
+    <script>
+        document.getElementById('joinButton').addEventListener('click', async () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-<script>
-    document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // 폼 제출 기본 동작 방지
+            const formData = {
+                username,
+                password
+            };
 
-        const formData = new FormData();
-        formData.append('username', document.getElementById('username').value);
-        formData.append('password', document.getElementById('password').value);
 
-        // 서버로 로그인 요청 보내기
-        fetch('/login', {
-            method: 'POST',
-            body: formData // FormData 객체를 요청 본문으로 설정
-        })
-            .then(response => {
-                // 헤더에서 Authorization 값을 추출
-                const authToken = response.headers.get('Authorization');
-                if (authToken) {
-                    // 로컬 스토리지에 토큰 저장
-                    localStorage.setItem('jwtToken', authToken.split(' ')[1]); // 'Bearer ' 접두사 제거
-                    console.log('Token stored in localStorage');
-                } else {
-                    console.error('Authorization token not found in headers');
+            try {
+                const response = await fetch('/api/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                if (!response.ok) {
+                    throw new Error('회원가입 실패!');
                 }
-                return response.json(); // JSON 응답 처리를 계속 진행
+
+                const result = await response.json();
+                responseMessage.textContent = '회원가입 되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
+            }
+        });
+    </script>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // 폼 제출 기본 동작 방지
+
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+
+            // 서버로 로그인 요청 보내기
+            fetch('/login', {
+                method: 'POST',
+                body: formData // FormData 객체를 요청 본문으로 설정
             })
-            .catch(error => {
-                console.error('Login failed:', error);
-            });
-    });
+                .then(response => {
+                    // 헤더에서 Authorization 값을 추출
+                    const authToken = response.headers.get('Authorization');
+                    if (authToken) {
+                        // 로컬 스토리지에 토큰 저장
+                        localStorage.setItem('jwtToken', authToken.split(' ')[1]); // 'Bearer ' 접두사 제거
+                        console.log('Token stored in localStorage');
+                    } else {
+                        console.error('Authorization token not found in headers');
+                    }
+                    return response.json(); // JSON 응답 처리를 계속 진행
+                })
+                .catch(error => {
+                    console.error('Login failed:', error);
+                });
+        });
 
-</script>
+    </script>
 
+<!--    서버 생성 및 삭제-->
     <form id="gameForm">
         <label for="gameName">게임 종류:</label>
         <select id="gameName">
@@ -221,7 +220,96 @@
         <div>생성 중...</div>
     </div>
 
+    <script>
+        function submitForm() {
+            const gameName = document.getElementById('gameName').value;
+            const version = document.getElementById('version').value;
+            const serverName = document.getElementById('serverName').value;
+            const ramCapacity = document.getElementById('ramCapacity').value;
+            const paymentSystem = document.getElementById('paymentSystem').value;
+            const time = document.getElementById('time').value;
 
+            const formData = {
+                gameName,
+                version,
+                serverName,
+                ramCapacity,
+                paymentSystem,
+                time
+            };
+
+            // 로딩 창 보이기
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            const token = localStorage.getItem('jwtToken');
+            fetch('/api/container/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(formData),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // 오류 상태 코드를 처리합니다. 여기서는 에러를 throw 하지만, 다른 방식으로 처리할 수도 있습니다.
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json()
+                })
+                .then(data => {
+                    alert("생성 완료");
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert("생성 실패");
+                })
+                .finally(() => {
+                    // 로딩 창 숨기기
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+        }
+    </script>
+    <div id="loading" style="display: none;">삭제 중...</div>
+    <div id="responseMessage"></div>
+    <button id="deleteButton">컨테이너 삭제</button>
+
+    <script>
+        document.getElementById('deleteButton').addEventListener('click', async () => {
+            const loadingElement = document.getElementById('loading');
+            const responseMessage = document.getElementById('responseMessage');
+
+            // 로딩 인디케이터를 표시합니다.
+            loadingElement.style.display = 'block';
+            responseMessage.textContent = '';
+
+            const token = localStorage.getItem('jwtToken');
+
+            try {
+                const response = await fetch('/api/container/close', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('데이터 삭제 실패!');
+                }
+
+                const result = await response.json();
+                responseMessage.textContent = '성공적으로 삭제되었습니다: ' + result.message;
+            } catch (error) {
+                responseMessage.textContent = '오류: ' + error.message;
+            } finally {
+                // 요청 처리가 완료되면 로딩 인디케이터를 숨깁니다.
+                loadingElement.style.display = 'none';
+            }
+        });
+    </script>
+
+
+<!--    파일 목록 및 파일 관리-->
     <h3>해당 폴더에 있는 폴더 및 파일 목록:</h3>
     <button id="goBackButton">뒤로 가기</button>
     <ul id="fileList"></ul>
@@ -234,7 +322,12 @@
         refreshFileList(``);
     });
     function refreshFileList(path) {
-        fetch(`/api/server/ListOfFileAndFolder?path=${path}`)
+        const token = localStorage.getItem('jwtToken');
+        fetch(`/api/server/ListOfFileAndFolder?path=${path}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
         .then(response => response.json())
         .then(data => {
             // console.log(data); // 받은 데이터를 콘솔에 출력
@@ -320,9 +413,12 @@
                     } else {
                         path = previousPaths.join('/') + "/"    + userInput;
                     }
-                    
+                    const token = localStorage.getItem('jwtToken');
                     fetch(`api/server/makeDir?path=${path}`, {
                         method: "PUT",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
                     })
                     .then(data => {
                         console.log("makeDir",data);
@@ -339,9 +435,13 @@
 
         function handleOptionClick_delete(path) {
             return () => {
+                const token = localStorage.getItem('jwtToken');
                 fetch(`api/server/delete?path=${path}`, {
-                        method: 'PUT'
-                    })
+                    method: 'PUT'
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
                     .then(response => response.json())
                     .then(data => {
                         console.log("delete",data);
@@ -514,96 +614,8 @@
         }
     </script>
 
-<script>
-    function submitForm() {
-        const gameName = document.getElementById('gameName').value;
-        const version = document.getElementById('version').value;
-        const serverName = document.getElementById('serverName').value;
-        const ramCapacity = document.getElementById('ramCapacity').value;
-        const paymentSystem = document.getElementById('paymentSystem').value;
-        const time = document.getElementById('time').value;
 
-        const formData = {
-            gameName,
-            version,
-            serverName,
-            ramCapacity,
-            paymentSystem,
-            time
-        };
-
-        // 로딩 창 보이기
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/container/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify(formData),
-        })
-        .then(response => {
-            if (!response.ok) {
-                // 오류 상태 코드를 처리합니다. 여기서는 에러를 throw 하지만, 다른 방식으로 처리할 수도 있습니다.
-                throw new Error('Network response was not ok');
-            }
-            return response.json()
-        })
-        .then(data => {
-            alert("생성 완료");
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert("생성 실패");
-        })
-        .finally(() => {
-            // 로딩 창 숨기기
-            document.getElementById('loadingOverlay').style.display = 'none';
-        });
-    }
-</script>
-    <div id="loading" style="display: none;">삭제 중...</div>
-    <div id="responseMessage"></div>
-    <button id="deleteButton">컨테이너 삭제</button>
-
-    <script>
-        document.getElementById('deleteButton').addEventListener('click', async () => {
-            const loadingElement = document.getElementById('loading');
-            const responseMessage = document.getElementById('responseMessage');
-
-            // 로딩 인디케이터를 표시합니다.
-            loadingElement.style.display = 'block';
-            responseMessage.textContent = '';
-
-            const token = localStorage.getItem('jwtToken');
-
-            try {
-                const response = await fetch('/api/container/close', {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('데이터 삭제 실패!');
-                }
-
-                const result = await response.json();
-                responseMessage.textContent = '성공적으로 삭제되었습니다: ' + result.message;
-            } catch (error) {
-                responseMessage.textContent = '오류: ' + error.message;
-            } finally {
-                // 요청 처리가 완료되면 로딩 인디케이터를 숨깁니다.
-                loadingElement.style.display = 'none';
-            }
-        });
-    </script>
-
-<div id="userDockerList"></div>
-
+<!--    서버 시작 중지-->
     <h1>게임 서버 제어 API</h1>
     <h2>게임 서버 시작</h2>
     <p>게임 서버를 시작합니다.</p>
@@ -613,49 +625,51 @@
     <p>게임 서버를 종료합니다.</p>
     <button onclick="stopServer()">서버 종료</button>
 
-<script>
-    function startServer() {
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/server/start', {
-            headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 시작에 실패했습니다.');
+    <script>
+        function startServer() {
+            const token = localStorage.getItem('jwtToken');
+            fetch('/api/server/start', {
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
                 }
-                return response.json();
             })
-            .then(data => {
-                console.log('서버 시작:', data);
-                // 여기에서 필요한 처리를 수행하세요.
-            })
-            .catch(error => console.error('오류 발생:', error));
-    }
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 시작에 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('서버 시작:', data);
+                    // 여기에서 필요한 처리를 수행하세요.
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
 
-    function stopServer() {
-        const token = localStorage.getItem('jwtToken');
-        fetch('/api/server/stop', {
-            headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-            }
-
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('서버 종료에 실패했습니다.');
+        function stopServer() {
+            const token = localStorage.getItem('jwtToken');
+            fetch('/api/server/stop', {
+                headers: {
+                    'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('서버 종료:', data);
-                // 여기에서 필요한 처리를 수행하세요.
-            })
-            .catch(error => console.error('오류 발생:', error));
-    }
-</script>
 
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 종료에 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('서버 종료:', data);
+                    // 여기에서 필요한 처리를 수행하세요.
+                })
+                .catch(error => console.error('오류 발생:', error));
+        }
+    </script>
+
+
+<!--    데이터 베이스-->
     <h1>데이터베이스 정보</h1>
 
     <section>
@@ -664,6 +678,7 @@
             <tr>
                 <th>ID</th>
                 <th>서버이름</th>
+                <th>우저</th>
                 <th>이미지ID</th>
                 <th>크기</th>
                 <th>생성날짜</th>
@@ -678,11 +693,13 @@
             <tr>
                 <th>ID</th>
                 <th>서버이름</th>
+                <th>유저</th>
                 <th>엣지서버</th>
                 <th>포트</th>
                 <th>도커ID</th>
                 <th>램</th>
                 <th>게임</th>
+                <th>베이스이미지</th>
             </tr>
         </table>
     </section>
