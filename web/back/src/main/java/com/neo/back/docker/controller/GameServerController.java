@@ -14,6 +14,7 @@ import com.neo.back.docker.dto.FileDataDto;
 import com.neo.back.docker.dto.StartGameServerDto;
 import com.neo.back.docker.service.GameDataService;
 import com.neo.back.docker.service.StartAndStopGameServerService;
+import com.neo.back.docker.service.UploadAndDownloadService;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +37,7 @@ public class GameServerController {
     private final GameDataService gameDataService;
     private final GameServerSettingService serverSettingService;
     private final StartAndStopGameServerService startAndStopGameServerService;
+    private final UploadAndDownloadService uploadAndDownloadService;
     private final GetCurrentUser getCurrentUser;
 
     @GetMapping("/api/server/start")
@@ -52,8 +56,8 @@ public class GameServerController {
         return ResponseEntity.ok(stopMes);
     }
 
-    @GetMapping("/api/server/files")
-    public ResponseEntity<?> getDockerFileList(@RequestParam String path) {
+    @GetMapping("/api/server/ListOfFileAndFolder")
+    public ResponseEntity<List<FileDataDto>> getDockerFileList(@RequestParam String path) {
         User user = getCurrentUser.getUser();
         Mono<String> fileListInst = gameDataService.getFileAndFolderListInst(path, user);
         List<FileDataDto> fileList = gameDataService.getFileAndFolderList(fileListInst, user);
@@ -91,34 +95,21 @@ public class GameServerController {
     }
 
     @PostMapping("api/server/upload")
-        public ResponseEntity<String> uploadFile(MultipartFile[] files) {
-            File tempDir = new File(System.getProperty("java.io.tmpdir"), "uploadedFolder");
-            tempDir.mkdirs();
-            System.out.println("sam");
-            System.out.println(files);
-            System.out.println("sam");
-            for (MultipartFile file : files) {
-                try {
-                    System.out.println("원래 경로: " + file.getOriginalFilename());
-                    String originalFilename = file.getOriginalFilename();
-
-                    // 파일의 경로에서 폴더 경로를 추출하여 폴더 생성
-                    String directoryPath = originalFilename.substring(0, originalFilename.lastIndexOf(File.separator));
-                    System.out.println(directoryPath);
-                    if (directoryPath != null && !directoryPath.isEmpty()) {
-                        File directory = new File(tempDir, directoryPath);
-                        directory.mkdirs();
-                    }
-
-                    Path filePath = tempDir.toPath().resolve(file.getOriginalFilename());
-                    Files.write(filePath, file.getBytes());
-                    System.out.println(filePath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-                }
-            }
-
-        return ResponseEntity.ok("NULL");
+        public  ResponseEntity<String> uploadFile(MultipartFile[] files,@RequestParam String path) {
+            Mono<String> Mes = uploadAndDownloadService.upload(files,path);
+        return Mes.map(message -> ResponseEntity.ok().body("{\"uploadStatus\": \"" + message + "\"}")).block();
     }
+
+    @PutMapping("api/server/delete")
+    public ResponseEntity<Map<String, String>> deleteGameServerData(@RequestParam String path) {
+        Map<String, String> Mes = uploadAndDownloadService.deleteFileAndFolder(path);
+        return ResponseEntity.ok(Mes);
+    }
+
+    @PutMapping("api/server/makeDir")
+    public ResponseEntity<Map<String, String>> makeDirInGameServer(@RequestParam String path) {
+        Map<String, String> Mes = uploadAndDownloadService.makeDir(path);
+        return ResponseEntity.ok(Mes);
+    }
+
 }

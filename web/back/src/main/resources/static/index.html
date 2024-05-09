@@ -221,14 +221,216 @@
         <div>생성 중...</div>
     </div>
 
+
+    <h3>해당 폴더에 있는 폴더 및 파일 목록:</h3>
+    <button id="goBackButton">뒤로 가기</button>
+    <ul id="fileList"></ul>
+
+    <script>
+    var fileList = document.getElementById("fileList");
+    // 페이지 로드 시 사용자 정보 가져오기
+    document.addEventListener("DOMContentLoaded", function() {
+        // getUserInfo();
+        refreshFileList(``);
+    });
+    function refreshFileList(path) {
+        fetch(`/api/server/ListOfFileAndFolder?path=${path}`)
+        .then(response => response.json())
+        .then(data => {
+            // console.log(data); // 받은 데이터를 콘솔에 출력
+            fileList.innerHTML = "";
+            data.forEach(item => {
+                // console.log(item.name + (item.directory));
+                // console.log(item);
+                const listItem = document.createElement("li");
+                const link = document.createElement("a");
+                link.textContent = item.fileName + (item.isDirectory ? " (폴더)" : " (파일)");
+                link.href = "#";
+                link.addEventListener("click", () => {
+                    if (item.isDirectory) {
+                        previousPaths.push(item.fileName);
+                        refreshFileList(`${path}/${item.fileName}`);
+                    } else {
+                        downloadFile(`${path}/${item.fileName}`);
+                    }
+                });
+                link.addEventListener('dragover', (event) => {
+                    event.preventDefault();
+                    link.style.border = '2px dashed red'; // 드래그 중일 때의 스타일
+                });
+                link.addEventListener('dragleave', (event) => {
+                    event.preventDefault();
+                    link.style.border = '2px dashed blue'; // 드래그를 끝냈을 때의 스타일
+                });
+                link.addEventListener('drop',(event) => {
+                    if (item.isDirectory) {
+                        handleDrop_path(event,item.fileName);
+                    } else {
+                        handleDrop_path(event,"");
+                    }
+                });
+                link.addEventListener("contextmenu",(event) => createContextMenu(event,item.fileName));
+
+                listItem.appendChild(link);
+                fileList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching file list:", error);
+        });
+    }
+    function createContextMenu(event,path) {
+        event.preventDefault();
+
+        let previousPath = "";
+        if (previousPaths.length == 0) {
+            previousPath = path;
+        } else {
+            previousPath = previousPaths.join('/') + "/"    + path;
+        }
+
+        const menu = document.createElement("div");
+        menu.innerHTML = `
+            <ul>
+                <li id="makeDir">makeDir</li>
+                <li id="delete">Delete</li>
+                <li id="optionC">Option C</li>
+            </ul>
+        `;
+        menu.style.position = "absolute";
+        menu.style.top = `${event.clientY}px`;
+        menu.style.left = `${event.clientX}px`;
+        menu.style.backgroundColor = "white";
+        menu.style.padding = "10px";
+        menu.style.border = "1px solid black";
+        document.body.appendChild(menu);
+    
+        function handleOptionClick_makeDir() {
+            const inputField = document.createElement("input");
+            inputField.setAttribute("type", "text");
+            inputField.setAttribute("placeholder", "디렉토리 이름을 입력하세요");
+            const submitButton = document.createElement("button");
+            submitButton.textContent = "확인";
+            submitButton.addEventListener("click", () => {
+                let path = "";
+                const userInput = inputField.value.trim();
+                if (userInput !== "") {
+                    if (previousPaths.length == 0) {
+                        path = userInput;
+                    } else {
+                        path = previousPaths.join('/') + "/"    + userInput;
+                    }
+                    
+                    fetch(`api/server/makeDir?path=${path}`, {
+                        method: "PUT",
+                    })
+                    .then(data => {
+                        console.log("makeDir",data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                    menu.remove();
+                }
+            });
+            menu.appendChild(inputField);
+            menu.appendChild(submitButton);
+        }
+
+        function handleOptionClick_delete(path) {
+            return () => {
+                fetch(`api/server/delete?path=${path}`, {
+                        method: 'PUT'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("delete",data);
+                        console.log("delete",data.deleteStatus);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+        function handleOptionClick(endpoint) {
+            return () => {
+                fetch(endpoint)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error("에러 발생:", error);
+                    });
+                menu.remove();
+            };
+        }
+
+        document.getElementById("makeDir").addEventListener("click", handleOptionClick_makeDir());
+        document.getElementById("delete").addEventListener("click", handleOptionClick_delete(previousPath));
+        document.getElementById("optionC").addEventListener("click", handleOptionClick("your/optionC/endpoint"));
+    
+        document.addEventListener("click", (e) => {
+            if (!menu.contains(e.target)) {
+                menu.remove();
+            }
+        });
+    }
+
+    async function handleDrop_path(event, path="") {
+        event.preventDefault();
+        let previousPath = "";
+        if (path == "" || previousPaths.length == 0) {
+            previousPath = path;
+        } else {
+            previousPath = previousPaths.join('/') + "/" + path;
+        }
+        const items = event.dataTransfer.items;
+    
+        // FormData 객체 생성
+        const formData = new FormData();
+    
+        // 드롭된 항목이 폴더인지 확인하여 파일들을 FormData에 추가
+        for (const item of items) {
+            const entry = item.webkitGetAsEntry();
+            if (entry.isDirectory) {
+                await traverseDirectory(entry, formData, entry.name + "/");
+            } else {
+                // 폴더가 아닌 경우 파일을 FormData에 추가
+                const file = await getFile(entry);
+                formData.append('files', file, file.name);
+            }
+        }
+    
+        // FormData를 서버로 전송
+        uploadFormData(formData,previousPath);
+    }
+
+    let previousPath = "";
+    let previousPaths = [];
+
+    document.getElementById("goBackButton").addEventListener("click", () => {
+        console.log(previousPaths);
+        // 이전 경로가 있을 경우
+        if (previousPaths.length > 0) {
+            // 배열에서 마지막 이전 경로를 가져옴
+            previousPaths.pop();
+            const previousPath = previousPaths.join('/');
+            // 이전 경로로 데이터를 요청
+            console.log(previousPath);
+            refreshFileList(previousPath);
+        }
+    });
+
+    </script>
+    
     <div id="drop_area">
         Drop folder here and i show your file list
     </div>
-    <ul id="UserFileList"></ul>
-
+    
     <script>
         const dropArea = document.getElementById('drop_area');
-        const fileList = document.getElementById('UserFileList');
 
         dropArea.addEventListener('dragover', (event) => {
             event.preventDefault();
@@ -240,26 +442,39 @@
             dropArea.style.border = '2px dashed blue'; // 드래그를 끝냈을 때의 스타일
         });
 
-        dropArea.addEventListener('drop', async (event) => {
+        dropArea.addEventListener('drop', handleDrop);
+
+        async function handleDrop(event) {
             event.preventDefault();
             dropArea.style.border = '2px dashed blue'; // 드롭 후의 스타일
             const items = event.dataTransfer.items;
-
+        
             // FormData 객체 생성
             const formData = new FormData();
-
+        
             // 드롭된 항목이 폴더인지 확인하여 파일들을 FormData에 추가
             for (const item of items) {
                 const entry = item.webkitGetAsEntry();
                 if (entry.isDirectory) {
-                    await traverseDirectory(entry, formData);
+                    await traverseDirectory(entry, formData, entry.name + "/");
+                } else {
+                    // 폴더가 아닌 경우 파일을 FormData에 추가
+                    const file = await getFile(entry);
+                    formData.append('files', file, file.name);
                 }
             }
+
 
             const token = localStorage.getItem('jwtToken');
 
             // FormData를 서버로 전송
-            fetch('api/server/upload', {
+            uploadFormData(formData);
+        }
+        
+        function uploadFormData(formData,path='') {
+            const token = localStorage.getItem('jwtToken');
+            // console.log(path);
+            fetch(`api/server/upload?path=${path}`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -269,11 +484,13 @@
             .then(response => response.json())
             .then(data => {
                 console.log('서버에서 받은 데이터:', data);
+                const uploadStatus = data.uploadStatus;
+                console.log('서버에서 받은 uploadStatus 값:', uploadStatus);
             })
             .catch(error => {
                 console.error('에러 발생:', error);
             });
-        });
+        }
 
         async function traverseDirectory(directory, formData, path = '') {
             const reader = directory.createReader();
@@ -387,9 +604,6 @@
 
 <div id="userDockerList"></div>
 
-    <h3>해당 폴더에 있는 폴더 및 파일 목록:</h3>
-    <button id="goBackButton">뒤로 가기</button>
-    <ul id="fileList"></ul>
     <h1>게임 서버 제어 API</h1>
     <h2>게임 서버 시작</h2>
     <p>게임 서버를 시작합니다.</p>
@@ -400,74 +614,6 @@
     <button onclick="stopServer()">서버 종료</button>
 
 <script>
-
-    // 페이지 로드 시 사용자 정보 가져오기
-    document.addEventListener("DOMContentLoaded", function() {
-        // getUserInfo();
-        refreshFileList(``);
-    });
-
-    function refreshFileList(path) {
-        const token = localStorage.getItem('jwtToken');
-        fetch(`/api/server/files?path=${path}`, {
-            headers: {
-                'Authorization': 'Bearer ' + token  // JWT 토큰을 헤더에 추가
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // console.log(data); // 받은 데이터를 콘솔에 출력
-            const fileList = document.getElementById("fileList");
-            fileList.innerHTML = "";
-            data.forEach(item => {
-                // console.log(item.name + (item.directory));
-                // console.log(item);
-                const listItem = document.createElement("li");
-                const link = document.createElement("a");
-                link.textContent = item.file + (item.isDirectory ? " (폴더)" : " (파일)");
-                link.href = "#";
-                link.addEventListener("click", () => {
-                    if (item.isDirectory) {
-                        previousPaths.push(item.file);
-                        refreshFileList(`${path}/${item.file}`);
-                    } else {
-                        downloadFile(`${path}/${item.file}`);
-                    }
-                });
-                listItem.appendChild(link);
-                fileList.appendChild(listItem);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching file list:", error);
-        });
-    }
-
-        // 이전 경로를 저장하는 변수
-    let previousPath = "";
-
-    // 이전 경로들을 저장하는 배열
-    let previousPaths = [];
-
-    // 뒤로 가기 버튼 클릭 시 이벤트 핸들러
-    document.getElementById("goBackButton").addEventListener("click", () => {
-        console.log(previousPaths);
-        // 이전 경로가 있을 경우
-        if (previousPaths.length > 0) {
-            // 배열에서 마지막 이전 경로를 가져옴
-            previousPaths.pop();
-            const previousPath = previousPaths.join('/');
-            // 이전 경로로 데이터를 요청
-            console.log(previousPath);
-            refreshFileList(previousPath);
-        }
-    });
-
-    function downloadFile(filePath) {
-        // 여기에 파일 다운로드 로직을 추가하세요.
-        alert(`선택된 파일: ${filePath}`);
-    }
-
     function startServer() {
         const token = localStorage.getItem('jwtToken');
         fetch('/api/server/start', {
