@@ -2,6 +2,7 @@ package com.neo.back.docker.controller;
 
 import com.neo.back.docker.utility.GetCurrentUser;
 import com.neo.back.springjwt.entity.User;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +33,7 @@ public class DockerManagingController {
     private final GetCurrentUser getCurrentUser;
 
     @GetMapping("/api/container/list")
-    public List<MyServerListDto> getMyServerList() {
+    public ResponseEntity<List<MyServerListDto>> getMyServerList() {
         User user = getCurrentUser.getUser();
         return userServerService.getServerList(user);
     }

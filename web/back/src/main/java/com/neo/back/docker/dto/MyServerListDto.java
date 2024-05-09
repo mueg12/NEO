@@ -6,15 +6,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MyServerListDto {
-    Long dockerId;
+    Long imageNum;
 
     String gameName;
     String version;
     String serverName;
     String date;
     
-    public MyServerListDto(Long dockerId, String gameName, String version, String serverName, String date) {
-        this.dockerId = dockerId;
+    public MyServerListDto(Long imageNum, String gameName, String version, String serverName, String date) {
+        this.imageNum = imageNum;
         this.gameName = gameName;
         this.version = version;
         this.serverName = serverName;
