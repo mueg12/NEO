@@ -1,12 +1,14 @@
 package com.neo.back.docker.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class EdgeServerCmdDto {
     private String cpu;
     private String memoryTotal;

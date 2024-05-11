@@ -1,14 +1,16 @@
 package com.neo.back.docker.entity;
 
 import jakarta.persistence.Entity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class MinecreftServerSetting extends GameServerSetting{
 
     private Boolean allow_flight = false;

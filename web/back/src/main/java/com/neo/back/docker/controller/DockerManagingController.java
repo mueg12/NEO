@@ -35,13 +35,13 @@ public class DockerManagingController {
     @GetMapping("/api/container/list")
     public ResponseEntity<List<MyServerListDto>> getMyServerList() {
         User user = getCurrentUser.getUser();
-        return userServerService.getServerList(user);
+        return ResponseEntity.ok(userServerService.getServerList(user));
     }
 
     @DeleteMapping("/api/container/{ImageNum}")
-    public Mono<String> deleteContainer(@PathVariable Long ImageNum) {
+    public ResponseEntity<Mono<String>> deleteContainer(@PathVariable Long ImageNum) {
 
-        return userServerService.deleteServer(ImageNum);
+        return ResponseEntity.ok(userServerService.deleteServer(ImageNum));
     }
 
     @PostMapping("/api/container/create")

@@ -5,7 +5,6 @@ import com.neo.back.docker.utility.GetCurrentUser;
 import com.neo.back.springjwt.entity.User;
 
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,11 +19,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,9 +59,10 @@ public class GameServerController {
     }
 
     @GetMapping("/api/server/setting")
-    public Mono<Object> getServerSetting() {
+    public ResponseEntity<Mono<Object>> getServerSetting() {
         User user = getCurrentUser.getUser();
-        return serverSettingService.getServerSetting(user);
+        return ResponseEntity.ok().body(serverSettingService.getServerSetting(user));
+        //return ResponseEntity.ok(new CustomResponseEntity(serverSettingService.getServerSetting(user), "ok"));
     }
 
     @PostMapping("/api/server/setting")

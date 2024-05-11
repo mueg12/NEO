@@ -124,18 +124,18 @@ public class CreateDockerService {
 
     private Mono<String> databaseReflection(CreateDockerDto config, Game game, String dockerImageId, User user) {
         
-        DockerServer dockerServer = new DockerServer();
+        DockerServer dockerServer = new DockerServer(
+            config.getServerName(),
+            user, 
+            this.edgeRepo.findByIp(this.edgeServerInfo.getIP()), 
+            this.edgeServerInfo.getPortSelect(), 
+            this.containerId, 
+            config.getRamCapacity(), 
+            game);
         if (dockerImageId != null) {
             dockerServer.setBaseImage(dockerImageId);
         }
 
-        dockerServer.setUser(user);
-        dockerServer.setServerName(config.getServerName());
-        dockerServer.setEdgeServer(this.edgeRepo.findByIp(this.edgeServerInfo.getIP()));
-        dockerServer.setPort(this.edgeServerInfo.getPortSelect());
-        dockerServer.setDockerId(this.containerId);
-        dockerServer.setRAMCapacity(config.getRamCapacity());
-        dockerServer.setGame(game);
         this.dockerRepo.save(dockerServer);
 
         return Mono.just("Container create Success");

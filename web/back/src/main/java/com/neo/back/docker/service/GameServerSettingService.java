@@ -98,17 +98,17 @@ public class GameServerSettingService {
     @SuppressWarnings("deprecation")
     private Mono<String> getDockerContainerFile(String containerId, String filePathInContainer, Path localPath) {
         return this.dockerAPI.downloadFile(containerId, filePathInContainer, this.dockerWebClient)
-                .flatMap(dataBuffer -> {
-                    System.out.println();
-                    // 받아온 tar 파일을 로컬에 저장
-                    try (WritableByteChannel channel = Files.newByteChannel(localPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-                        // DataBuffer에서 데이터를 읽어 로컬 파일에 쓰기
-                        channel.write(dataBuffer.asByteBuffer());
-                        return Mono.just("File received and saved as " + localPath.toString());
-                    } catch (IOException e) {
-                        return Mono.error(e);
-                    }
-                });
+            .flatMap(dataBuffer -> {
+                System.out.println();
+                // 받아온 tar 파일을 로컬에 저장
+                try (WritableByteChannel channel = Files.newByteChannel(localPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                    // DataBuffer에서 데이터를 읽어 로컬 파일에 쓰기
+                    channel.write(dataBuffer.asByteBuffer());
+                    return Mono.just("File received and saved as " + localPath.toString());
+                } catch (IOException e) {
+                    return Mono.error(e);
+                }
+            });
     }
 
     private ResponseEntity<String> settingFormatConversion(Path localPath) {
