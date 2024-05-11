@@ -95,6 +95,16 @@ jobs:
           source: "web/back/build/libs/*.jar"
           target: "NEO_mainServer"
 
+      - name: Deploy to Server2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          source: "web/back/src/main/resources/keystore.p12"
+          target: "NEO_mainServer"
+
       - name: Restart server
         uses: appleboy/ssh-action@master
         with:
